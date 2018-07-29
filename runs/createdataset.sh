@@ -1,8 +1,8 @@
 
 
-PATH=~/.kaggle/tgs-salt-identification-challenge/
-kaggle competitions download -c tgs-salt-identification-challenge
-unzip $PATH/*.zip
-mkdir $PATH/test
-mv  $PATH/images  $PATH/test/
+#kaggle competitions download -c tgs-salt-identification-challenge
+PATH=~/.kaggle/competitions/tgs-salt-identification-challenge/
+unzip $PATH/train.zip -d train
+unzip $PATH/test.zip -d test
+
 

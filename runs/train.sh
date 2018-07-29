@@ -2,15 +2,15 @@
 
 
 # parameters
-DATA='~/.datasets/tgs_salt/'
-NAMEDATASET='tgs_salt'
+DATA='~/.kaggle/competitions/tgs-salt-identification-challenge/'
+NAMEDATASET='tgs-salt-identification-challenge'
 PROJECT='../netruns'
 EPOCHS=60
-BATCHSIZE=1
+BATCHSIZE=60
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
-PRINT_FREQ=10
-WORKERS=1
+PRINT_FREQ=50
+WORKERS=30
 RESUME='checkpointxx.pth.tar'
 GPU=0
 ARCH='unet'
@@ -18,7 +18,7 @@ LOSS='mcedice'
 OPT='adam'
 SCHEDULER='fixed'
 IMAGESIZE=101
-SNAPSHOT=10
+SNAPSHOT=5
 EXP_NAME='exp_tgs_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_001'
 
 
@@ -46,7 +46,7 @@ $DATA \
 --opt=$OPT \
 --scheduler=$SCHEDULER \
 --arch=$ARCH \
+--parallel \
 --finetuning \
 2>&1 | tee -a $PROJECT/$EXP_NAME/$EXP_NAME.log \
 
-#--parallel \
