@@ -95,24 +95,31 @@ if __name__ == '__main__':
     y_pred = []
     y_true = []
 
-    for idx in tqdm( range( len(dataset) ) ):   
+    for idx in tqdm( range( len(dataset) ) ):  
         
         sample = dataset[ idx ]    
+        mask = sample['label'][1,:,:].data.numpy()
+        mask = mask[92:92+116, 92:92+116]
+        
         idname = dataset.data.getimagename( idx )
         score = net( sample['image'].unsqueeze(0) )
+        
         score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_LINEAR )
+        mask  = F.resize_unet_inv_transform( mask , (101,101,3), 101, cv2.INTER_LINEAR )
     
         pred  = np.argmax( score, axis=2 )
         #pred  = sigmoid( score[:,:,0] ) > 0.5 
 
-        y_true.append( sample['label'][1,:,:].data.numpy() )
-        y_pred.append( pred )
-
+        y_true.append( mask.astype(int) )
+        y_pred.append( pred.astype(int) )
+        
+        
     y_true = np.stack( y_true, axis=0 ) 
     y_pred = np.stack( y_pred, axis=0 )
+        
     iout = intersection_over_union_thresholds( y_true, y_pred )
 
-    print( iout )
+    print('IOUT:', iout )
 
     print('dir: {}'.format(filename))
     print('DONE!!!')
