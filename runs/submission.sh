@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-
+# kaggle competitions submit -c tgs-salt-identification-challenge -f submission.csv -m "Message"
 PATHDATASET='~/.kaggle/competitions/'
 NAMEDATASET='tgs-salt-identification-challenge'
 PROJECT='../netruns'
