@@ -102,9 +102,13 @@ if __name__ == '__main__':
         score = net( sample['image'].unsqueeze(0) )
         score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_LINEAR )
     
-        #pred  = np.argmax( score, axis=2 )
-        pred  = sigmoid( score[:,:,0] ) > 0.5 
+        pred  = np.argmax( score, axis=2 )
+        #pred  = sigmoid( score[:,:,0] ) > 0.5 
         code  = rle_encode(pred)
+        if len(code) == 0:
+            #print('>>w: code zeros')
+            continue
+        
         results[idname] = code
 
     results = [ {'id': k, 'rle_mask': ' '.join(map(str, v))  } for k,v in results.items()  ]

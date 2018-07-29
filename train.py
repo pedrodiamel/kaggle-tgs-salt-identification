@@ -110,7 +110,7 @@ def main():
     train_data = tgsdata.TGSDataset(
         args.data, 
         tgsdata.train, 
-        count=100,
+        count=10000,
         num_channels=num_channels,
         transform=transforms.Compose([
             #mtrans.ToResize( (101,101), resize_mode='crop', padding_mode=cv2.BORDER_REFLECT_101 ),
@@ -132,7 +132,7 @@ def main():
     val_data = tgsdata.TGSDataset(
         args.data, 
         tgsdata.test, 
-        count=100,
+        count=5000,
         num_channels=num_channels,
         transform=transforms.Compose([
             #mtrans.ToResize( (101,101), resize_mode='crop' ),
