@@ -10,7 +10,7 @@ Segment salt deposits beneath the Earth's surface
 ## Download Kaggle dataset
     
     # loader dataset 
-
+    kaggle competitions download -c tgs-salt-identification-challenge
 
 ## Visualize result with Visdom
 

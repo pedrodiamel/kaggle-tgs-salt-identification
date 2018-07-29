@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 from torch.autograd import Variable
+import torch.nn.functional as F
 import math
 
 
@@ -64,9 +65,9 @@ class DUNet(nn.Module):
 
     def __init__(self, num_classes=3, is_deconv=False, in_channels=3, is_batchnorm=False):
         super(DUNet, self).__init__()
-        self.is_deconv = is_deconv
-        self.in_channels = in_channels
-        self.is_batchnorm = is_batchnorm
+        self.is_deconv     = is_deconv
+        self.in_channels   = in_channels
+        self.is_batchnorm  = is_batchnorm
 
         filters = [64, 128, 256, 512, 1024]
 
@@ -75,7 +76,7 @@ class DUNet(nn.Module):
         self.down3 = unetDown(filters[1], filters[2], self.is_batchnorm)
         self.down4 = unetDown(filters[2], filters[3], self.is_batchnorm)
         
-        self.center = DilateCenter(filters[3], filters[4], 3, self.is_batchnorm)
+        self.center = DilateCenter(filters[3], filters[4] - 1, 3, self.is_batchnorm)
 
         self.up4 = unetUp(filters[4], filters[3], self.is_deconv)
         self.up3 = unetUp(filters[3], filters[2], self.is_deconv)
@@ -83,21 +84,36 @@ class DUNet(nn.Module):
         self.up1 = unetUp(filters[1], filters[0], self.is_deconv)
         self.final = nn.Conv2d(filters[0], num_classes, 1)
 
+
+        self.depth_lin1 = nn.Linear(1, 100)
+        self.depth_lin2 = nn.Linear(100, 11*11)
+        self.depth_lin3 = nn.Linear(11*11, 11*11)
+
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                init.xavier_normal(m.weight)
-                init.constant(m.bias, 0)
+                init.xavier_normal_(m.weight)
+                init.constant_(m.bias, 0)
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def forward(self, x):
+    def forward(self, x, d):
 
         down1,befdown1 = self.down1(x)
         down2,befdown2 = self.down2(down1)
         down3,befdown3 = self.down3(down2)
-        down4,befdown4 = self.down4(down3)       
+        down4,befdown4 = self.down4(down3)    
+
         center = self.center(down4)
+
+        d1 = F.relu( self.depth_lin1(d) )
+        d2 = F.relu( self.depth_lin2(d1) )
+        d3 = F.relu( self.depth_lin3(d2) )
+        
+        d3 = d3.contiguous().view( d3.shape[0], 1, 11, 11 ) #[n, 1, 121] -> [n, 1, 121]
+        center = torch.cat( (d3, center), dim=1 )
+
         up4 = self.up4(befdown4, center)
         up3 = self.up3(befdown3, up4)
         up2 = self.up2(befdown2, up3)
@@ -148,7 +164,7 @@ class unetUp(nn.Module):
         if is_deconv:
             self.up = nn.ConvTranspose2d(in_size, out_size, 2)
         else:
-            self.up = nn.Upsample(scale_factor=2,mode='bilinear')
+            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
 
     def forward(self, inputs1, inputs2):
         ch_select=inputs2.size()[1] // 2
@@ -158,3 +174,17 @@ class unetUp(nn.Module):
         padding = [offset // 2, offset // 2 ]
         outputs1 = inputs1[:,:,padding[0]:-padding[0],padding[1]:-padding[1]]
         return self.conv(torch.cat([outputs1, outputs2], 1))
+
+
+
+# def test_dunet():
+
+#     x = torch.randn(2, 3, 300, 300)
+#     z = torch.Tensor( [[10], [10]] ) 
+#     net = DUNet(num_classes=3, is_deconv=False, in_channels=3, is_batchnorm=False)
+#     y = net(x,z)
+#     print(y.shape)
+
+
+# test_dunet()
+
