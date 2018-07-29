@@ -34,6 +34,8 @@ def unet11(pretrained=False, **kwargs):
     if pretrained == 'carvana':
         #state = torch.load('TernausNet.pt')
         #model.load_state_dict(state['model'])
+        pass
+    
     return model
 
 

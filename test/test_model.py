@@ -107,7 +107,7 @@ def test_model():
 
 def test_submission():
     
-    iname = '155410d6fa'
+    iname = 'c5f7b76607'
     folder_files = os.path.expanduser('~/.datasets/tgs_salt/sample_submission.csv')
     submission = pd.read_csv( folder_files )
     
@@ -115,13 +115,21 @@ def test_submission():
     #print( submission.loc[ submission['id'] == iname , 'rle_mask'] )
     
     results = { i:rlecode  for i,rlecode in zip( submission['id'], submission['rle_mask'] ) }
-    results[iname] = [1,2,3,4, 0,0,0, 1,1,1]
-    results = [ {'id': k, 'rle_mask': ' '.join(map(str, v))  } for k,v in results.items()  ]
+    
+    for k,v in results.items():
+        results[k] = [1,2,3,4, 0,0,0, 1,1,1]
+        print(k)
+
+
+    results = [ {'id': str(k), 'rle_mask': ' '.join( str(x) for x in v )  } for k,v in results.items()  ]
     #print(results)
+
 
     submission = pd.DataFrame(results).astype(str)
     submission.to_csv('submission.csv', index=None, encoding='utf-8')
 
+
+
     
-# test_submission()
-test_model()
+test_submission()
+# test_model()

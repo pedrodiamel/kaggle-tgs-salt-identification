@@ -102,8 +102,10 @@ if __name__ == '__main__':
         score = net( sample['image'].unsqueeze(0) )
         score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_LINEAR )
     
-        pred  = np.argmax( score, axis=2 )
+        pred  = np.argmax( score, axis=2 )        
         #pred  = sigmoid( score[:,:,0] ) > 0.5 
+        pred  = pred.astype(int)
+
         code  = rle_encode(pred)
         if len(code) == 0:
             #print('>>w: code zeros')
@@ -111,7 +113,7 @@ if __name__ == '__main__':
         
         results[idname] = code
 
-    results = [ {'id': k, 'rle_mask': ' '.join(map(str, v))  } for k,v in results.items()  ]
+    results = [ {'id': str(k), 'rle_mask': ' '.join( map(str, v) )  } for k,v in results.items()  ]
     submission = pd.DataFrame(results).astype(str)
     submission.to_csv(filename, index=None, encoding='utf-8')
 
