@@ -77,6 +77,7 @@ def main():
     parallel=args.parallel
     num_classes=2
     num_channels=3
+    view_freq=2
 
     network = SegmentationNeuralNet(
         patchproject=args.project,
@@ -85,7 +86,8 @@ def main():
         parallel=parallel,
         seed=args.seed,
         print_freq=args.print_freq,
-        gpu=args.gpu
+        gpu=args.gpu,
+        view_freq=view_freq,
         )
         
     network.create( 

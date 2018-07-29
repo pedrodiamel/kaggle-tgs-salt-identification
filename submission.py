@@ -116,7 +116,7 @@ if __name__ == '__main__':
         
         results[idname] = code
 
-    results = [ {'id': k, 'rle_mask': ' '.join(map(str, v))  } for k,v in results.items()  ]
+    results = [ {'id': str(k), 'rle_mask': ' '.join( map(str, v) )  } for k,v in results.items()  ]
     submission = pd.DataFrame(results).astype(str)
     submission.to_csv(filename, index=None, encoding='utf-8')
 

@@ -3,6 +3,20 @@
 Segment salt deposits beneath the Earth's surface
 
 
+## Results
+
+| Branch   | Name    | CV   | LB    | Description               |
+|:--------:|:-------:|:----:|:-----:|:-------------------------:|
+| classic  | unet    |      |       |                           |
+|          |         |      |       |                           |
+|          |         |      |       |                           |
+| depth    |         |      |       |                           |
+|          |         |      |       |                           |
+|          |         |      |       |                           |
+|          |         |      |       |                           |
+
+
+
 ## Installation
        
     $pip install -r installation.txt
