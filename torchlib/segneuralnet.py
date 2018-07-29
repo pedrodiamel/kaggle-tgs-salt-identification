@@ -295,19 +295,6 @@ class SegmentationNeuralNet(NeuralNetAbstract):
 
         kw = {'num_classes': num_output_channels, 'in_channels': num_input_channels, 'pretrained': pretrained}
         self.net = nnmodels.__dict__[arch](**kw)
-
-
-
-        if arch == 'unet':
-            self.net = nnmodels.unet( num_classes = num_output_channels )  
-        elif arch == 'simpletsegnet':
-            self.net = nnmodels.simpletsegnet( num_classes = num_output_channels, num_channels=num_input_channels )  
-        elif arch == 'unet11':
-            self.net = nnmodels.unet11( num_classes = num_output_channels ) 
-        elif arch == 'dunet':
-            self.net = nnmodels.dunet( n_classes = num_output_channels )                   
-        else:
-            assert(False)
         
         self.s_arch = arch
         self.num_output_channels = num_output_channels
