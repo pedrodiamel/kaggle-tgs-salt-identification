@@ -2,7 +2,16 @@ import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 from tqdm import tqdm
 
-from utils import decompose
+def decompose(labeled):
+    nr_true = labeled.max()
+    masks = []
+    for i in range(1, nr_true + 1):
+        msk = labeled.copy()
+        msk[msk != i] = 0.
+        msk[msk == i] = 255.
+        masks.append(msk)
+    if not masks: return np.array([labeled])
+    else: return np.array(masks)
 
 
 def iou(gt, pred):

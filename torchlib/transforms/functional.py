@@ -10,8 +10,8 @@ import math
 def resize_unet_inv_transform(img, imgsize, fov_size, interpolate_mode): 
     
     image = np.copy(img)
-    height, width, ch = imgsize
-    h,w,c = img.shape
+    height, width = imgsize[:2]
+    h,w = img.shape[:2]
 
     #unet required input size
     downsampleFactor = 16
