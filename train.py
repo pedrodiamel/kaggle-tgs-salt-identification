@@ -77,6 +77,7 @@ def main():
     parallel=args.parallel
     num_classes=2
     num_channels=3
+    view_freq=2
 
     network = SegmentationNeuralNet(
         patchproject=args.project,
@@ -85,7 +86,8 @@ def main():
         parallel=parallel,
         seed=args.seed,
         print_freq=args.print_freq,
-        gpu=args.gpu
+        gpu=args.gpu,
+        view_freq=view_freq,
         )
         
     network.create( 
@@ -117,8 +119,8 @@ def main():
             #mtrans.RandomCrop( (255,255), limit=50, padding_mode=cv2.BORDER_REFLECT_101  ),
             mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ),
             mtrans.RandomGeometricalTransform( angle=360, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101),
-            mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
-            mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),  
+            #mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
+            #mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),  
                      
             mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
             mtrans.ToTensor(),
