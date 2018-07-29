@@ -60,11 +60,11 @@ class DilateCenter(nn.Module):
 
         return y
 
-
 class DUNet(nn.Module):
 
-    def __init__(self, num_classes=3, is_deconv=False, in_channels=3, is_batchnorm=False):
+    def __init__(self, num_classes=1, in_channels=3, is_deconv=False, is_batchnorm=False):
         super(DUNet, self).__init__()
+        
         self.is_deconv     = is_deconv
         self.in_channels   = in_channels
         self.is_batchnorm  = is_batchnorm
@@ -144,7 +144,6 @@ class unetConv2(nn.Module):
         outputs = self.conv2(outputs)
         return outputs
 
-
 class unetDown(nn.Module):
     def __init__(self, in_size, out_size, is_batchnorm):
         super(unetDown, self).__init__()
@@ -155,7 +154,6 @@ class unetDown(nn.Module):
         outputs = self.conv(inputs)
         outputs1 = self.down(outputs)
         return outputs1, outputs
-
 
 class unetUp(nn.Module):
     def __init__(self, in_size, out_size, is_deconv):

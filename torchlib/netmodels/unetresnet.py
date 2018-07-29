@@ -69,7 +69,7 @@ class UNetResNet(nn.Module):
 
     """
 
-    def __init__(self, encoder_depth, num_classes, num_filters=32, dropout_2d=0.2,
+    def __init__(self, encoder_depth, num_classes=1, in_channels=3, num_filters=32, dropout_2d=0.2,
                  pretrained=False, is_deconv=False):
         super().__init__()
         self.num_classes = num_classes

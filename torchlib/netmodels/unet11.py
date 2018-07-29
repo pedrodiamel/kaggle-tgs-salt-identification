@@ -41,7 +41,6 @@ def unet11(pretrained=False, **kwargs):
 def conv3x3(in_, out):
     return nn.Conv2d(in_, out, 3, padding=1)
 
-
 class ConvRelu(nn.Module):
     def __init__(self, in_, out):
         super().__init__()
@@ -53,11 +52,9 @@ class ConvRelu(nn.Module):
         x = self.activation(x)
         return x
 
-
 class NoOperation(nn.Module):
     def forward(self, x):
         return x
-
 
 class DecoderBlock(nn.Module):
     def __init__(self, in_channels, middle_channels, out_channels):
@@ -72,9 +69,8 @@ class DecoderBlock(nn.Module):
     def forward(self, x):
         return self.block(x)
 
-
 class UNet11(nn.Module):
-    def __init__(self, num_classes=1, num_filters=32, pretrained=False):
+    def __init__(self, num_classes=1, in_channels=3, num_filters=32, pretrained=False):
         """
         :param num_classes:
         :param num_filters:

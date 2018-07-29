@@ -52,7 +52,7 @@ class AlbuNet(nn.Module):
 
         """
 
-    def __init__(self, num_classes=1, num_filters=32, pretrained=False, is_deconv=False):
+    def __init__(self, num_classes=1, in_channels=3, num_filters=32, pretrained=False, is_deconv=False):
         """
         :param num_classes:
         :param num_filters:
@@ -65,24 +65,20 @@ class AlbuNet(nn.Module):
         """
         super().__init__()
         self.num_classes = num_classes
+        self.in_channels = in_channels
 
         self.pool = nn.MaxPool2d(2, 2)
-
         self.encoder = torchvision.models.resnet34(pretrained=pretrained)
 
         self.relu = nn.ReLU(inplace=True)
-
         self.conv1 = nn.Sequential(self.encoder.conv1,
                                    self.encoder.bn1,
                                    self.encoder.relu,
                                    self.pool)
 
         self.conv2 = self.encoder.layer1
-
         self.conv3 = self.encoder.layer2
-
         self.conv4 = self.encoder.layer3
-
         self.conv5 = self.encoder.layer4
 
         self.center = DecoderBlockV2(512, num_filters * 8 * 2, num_filters * 8, is_deconv)
@@ -96,6 +92,7 @@ class AlbuNet(nn.Module):
         self.final = nn.Conv2d(num_filters, num_classes, kernel_size=1)
 
     def forward(self, x):
+        
         conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
         conv3 = self.conv3(conv2)
@@ -105,7 +102,6 @@ class AlbuNet(nn.Module):
         center = self.center(self.pool(conv5))
 
         dec5 = self.dec5(torch.cat([center, conv5], 1))
-
         dec4 = self.dec4(torch.cat([dec5, conv4], 1))
         dec3 = self.dec3(torch.cat([dec4, conv3], 1))
         dec2 = self.dec2(torch.cat([dec3, conv2], 1))
