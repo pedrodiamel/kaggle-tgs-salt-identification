@@ -5,15 +5,15 @@
 DATA='~/.kaggle/competitions/tgs-salt-identification-challenge/'
 NAMEDATASET='tgs-salt-identification-challenge'
 PROJECT='../netruns'
-EPOCHS=60
+EPOCHS=500
 BATCHSIZE=60
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=50
 WORKERS=30
-RESUME='checkpointxx.pth.tar'
+RESUME='model_best.pth.tar'
 GPU=0
-ARCH='dunet'
+ARCH='unet'
 LOSS='mcedice'
 OPT='adam'
 SCHEDULER='fixed'
@@ -22,10 +22,10 @@ SNAPSHOT=5
 EXP_NAME='exp_tgs_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_001'
 
 
-rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
-rm -rf $PROJECT/$EXP_NAME/
-mkdir $PROJECT    
-mkdir $PROJECT/$EXP_NAME  
+#rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
+#rm -rf $PROJECT/$EXP_NAME/
+#mkdir $PROJECT    
+#mkdir $PROJECT/$EXP_NAME  
 
 
 python ../train.py \

@@ -110,15 +110,15 @@ def main():
     train_data = tgsdata.TGSDataset(
         args.data, 
         tgsdata.train, 
-        count=10000,
+        count=50000,
         num_channels=num_channels,
         transform=transforms.Compose([
             #mtrans.ToResize( (101,101), resize_mode='crop', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.RandomCrop( (255,255), limit=50, padding_mode=cv2.BORDER_REFLECT_101  ),
             mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ),
             mtrans.RandomGeometricalTransform( angle=360, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101),
-            mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
-            mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),  
+            #mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
+            #mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),  
                      
             mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
             mtrans.ToTensor(),

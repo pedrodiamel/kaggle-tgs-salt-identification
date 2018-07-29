@@ -167,12 +167,13 @@ class MCEDiceLoss(nn.Module):
         alpha = self.alpha  
 
         # bce(all_channels) +  dice_loss(mask_channel) + dice_loss(border_channel)   
-        loss_all  = self.loss_mce(y_pred[:,:2,...], y_true[:,:2,...])        
+        loss_all  = self.loss_mce( y_pred[:,:2,...], y_true[:,:2,...])    
+        loss_fg   = self.loss_dice( y_pred, y_true )
         
         #loss_fg   = self.loss_dice( y_pred[:,1,...].unsqueeze(1), y_true[:,1,...].unsqueeze(1) )
         #loss_th   = self.loss_dice( y_pred[:,2,...].unsqueeze(1), y_true[:,2,...].unsqueeze(1) )
         #loss = loss_all + loss_fg + loss_th           
-        loss = loss_all
+        loss = loss_all + loss_fg
 
         return loss
 
