@@ -106,6 +106,9 @@ if __name__ == '__main__':
         #pred  = sigmoid( score[:,:,0] ) > 0.5 
         pred  = pred.astype(int)
 
+        if pred.sum() == 0 or pred.sum() > pred.shape[0]*pred.shape[1] :
+            continue
+
         code  = rle_encode(pred)
         if len(code) == 0:
             #print('>>w: code zeros')
