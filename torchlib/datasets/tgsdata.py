@@ -57,6 +57,10 @@ class TGSDataset(object):
 
     def __len__(self):
         return self.count
+    
+    def getimagename(self, idx):
+        idx = idx % len(self.data)
+        return self.data.getimagename(idx)
 
     def __getitem__(self, idx):   
 
@@ -67,8 +71,8 @@ class TGSDataset(object):
             weight_t = getweightmap(mask)
             weight_t = weight_t[:,:,np.newaxis]
             mask_t   = np.zeros( (mask.shape[0], mask.shape[1], 2) )   
-            mask_t[:,:,0] = (mask <= 0)
-            mask_t[:,:,1] = (mask > 0)
+            mask_t[:,:,0] = (mask <= 0) #bg
+            mask_t[:,:,1] = (mask >  0)
             obj = ObjectImageMaskMetadataAndWeightTransform( image_t, mask_t, weight_t, np.array([depth])  )
         else:
             name, image, depth = self.data[idx] 

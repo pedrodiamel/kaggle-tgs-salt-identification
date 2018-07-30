@@ -114,6 +114,7 @@ class BDiceLoss(nn.Module):
         return 1. - score
 
 
+    
 class BLogDiceLoss(nn.Module):
     
     def __init__(self, classe = 1 ):
@@ -158,7 +159,7 @@ class MCEDiceLoss(nn.Module):
     def __init__(self, alpha=1.0, gamma=1.0  ):
         super(MCEDiceLoss, self).__init__()
         self.loss_mce = BCELoss()
-        self.loss_dice = BLogDiceLoss( classe=0  )
+        self.loss_dice = BLogDiceLoss( classe=1  )
         self.alpha = alpha
         self.gamma = gamma
 
@@ -190,17 +191,18 @@ class Accuracy(nn.Module):
         y_true = centercrop(y_true, w, h)
 
         prob = F.softmax(y_pred, dim=1).data
-        _, maxprob = torch.max(prob,1)
+        prediction = torch.argmax(prob,1)
 
         accs = []
         for c in range( int(self.bback_ignore), ch ):
             yt_c = y_true[:,c,...]
-            num = (((maxprob.eq(c) + yt_c.data.eq(1)).eq(2)).float().sum() + 1 )
+            num = (((prediction.eq(c) + yt_c.data.eq(1)).eq(2)).float().sum() + 1 )
             den = (yt_c.data.eq(1).float().sum() + 1)
             acc = (num/den)*100
             accs.append(acc)
-
-        return np.mean(accs)
+        
+        accs = torch.stack(accs)
+        return accs.mean()
 
 
 class Dice(nn.Module):
@@ -217,7 +219,7 @@ class Dice(nn.Module):
 
         prob = F.softmax(y_pred, dim=1)
         prob = prob.data
-        _, prediction = torch.max(prob, dim=1)
+        prediction = torch.argmax(prob, dim=1)
 
         y_pred_f = flatten(prediction).float()
         dices = []
@@ -226,8 +228,9 @@ class Dice(nn.Module):
             intersection = y_true_f * y_pred_f
             dice = (2. * torch.sum(intersection) / ( torch.sum(y_true_f) + torch.sum(y_pred_f) + eps ))*100
             dices.append(dice)
-
-        return np.mean(dices)
+        
+        dices = torch.stack(dices)
+        return dices.mean()
 
 
 def to_one_hot(mask, size):    

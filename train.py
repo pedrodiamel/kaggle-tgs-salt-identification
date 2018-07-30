@@ -112,19 +112,25 @@ def main():
     train_data = tgsdata.TGSDataset(
         args.data, 
         tgsdata.train, 
-        count=50000,
+        count=16000,
         num_channels=num_channels,
         transform=transforms.Compose([
-            #mtrans.ToResize( (101,101), resize_mode='crop', padding_mode=cv2.BORDER_REFLECT_101 ),
-            #mtrans.RandomCrop( (255,255), limit=50, padding_mode=cv2.BORDER_REFLECT_101  ),
+            mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
+            mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),   
+            mtrans.ToResize( (300,300), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            mtrans.RandomCrop( (256,256), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
             mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ),
-            mtrans.RandomGeometricalTransform( angle=360, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101),
-            #mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
-            #mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),  
-                     
-            mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            mtrans.RandomGeometricalTransform( angle=30, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101),                    
+            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            
+            mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
+            mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ), prob=0.50 ),
+            mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.15 ), prob=0.50 ),
+            mtrans.ToRandomTransform( mtrans.ToGaussianBlur(), prob=0.15 ),
+            
             mtrans.ToTensor(),
-            mtrans.ToNormalization(),
+            mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
+            #mtrans.ToNormalization(),
             ])
         )
 
@@ -135,19 +141,20 @@ def main():
     val_data = tgsdata.TGSDataset(
         args.data, 
         tgsdata.test, 
-        count=5000,
+        count=4000,
         num_channels=num_channels,
         transform=transforms.Compose([
-            #mtrans.ToResize( (101,101), resize_mode='crop' ),
+            mtrans.ToResize( (256,256), resize_mode='squash' ),
             #mtrans.RandomCrop( (255,255), limit=50, padding_mode=cv2.BORDER_CONSTANT  ),
-            mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
             mtrans.ToTensor(),
-            mtrans.ToNormalization(), 
+            mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
+            #mtrans.ToNormalization(), 
             ])
         )
 
-    val_loader = DataLoader(val_data, batch_size=args.batch_size, shuffle=True, 
-        num_workers=args.workers, pin_memory=network.cuda, drop_last=False)
+    val_loader = DataLoader(val_data, batch_size=args.batch_size, shuffle=False, 
+        num_workers=args.workers, pin_memory=network.cuda, drop_last=True)
        
     # print neural net class
     print('SEG-Torch: {}'.format(datetime.datetime.now()) )

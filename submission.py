@@ -70,9 +70,11 @@ if __name__ == '__main__':
         train=False, 
         files='sample_submission.csv',
         transform=transforms.Compose([
-            mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
             mtrans.ToTensor(),
-            mtrans.ToNormalization(), 
+            #mtrans.ToNormalization(), 
+            mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
             ])
         )
 
@@ -91,32 +93,39 @@ if __name__ == '__main__':
     if net.load( pathnamemodel ) is not True:
         assert(False)
 
-    folder_files = os.path.expanduser( os.path.join(pathnamedataset, 'sample_submission.csv' )  )
-    submission = pd.read_csv( folder_files )
-    results = { i:rlecode  for i,rlecode in zip( submission['id'], submission['rle_mask'] ) }  
-
+    #folder_files = os.path.expanduser( os.path.join(pathnamedataset, 'sample_submission.csv' )  )
+    #submission = pd.read_csv( folder_files )
+    #results = { i:rlecode  for i,rlecode in zip( submission['id'], submission['rle_mask'] ) }  
+    results = list()    
     for idx in tqdm( range( len(dataset) ) ):   
         
         sample = dataset[ idx ]    
         idname = dataset.data.getimagename( idx )
         score = net( sample['image'].unsqueeze(0) )
-        score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_LINEAR )
+        #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_CUBIC )
+        #score = cv2.resize(score, (101, 101) , interpolation = cv2.INTER_CUBIC)
     
-        pred  = np.argmax( score, axis=2 )        
-        #pred  = sigmoid( score[:,:,0] ) > 0.5 
+        pred  = np.argmax( score, axis=2 )   
+        #pred  = sigmoid( score[:,:,0] ) > 0.5
+        pred  = cv2.resize(pred.astype(float), (101, 101) , interpolation=cv2.INTER_LINEAR)  
         pred  = pred.astype(int)
 
-        if pred.sum() == 0 or pred.sum() > pred.shape[0]*pred.shape[1] :
-            continue
 
         code  = rle_encode(pred)
+        code  = ' '.join( map(str, code) )
+
+        if pred.sum() <= 10: # area <= 10 
+            code = ' '        
+
         if len(code) == 0:
             #print('>>w: code zeros')
-            continue
+            code = ' '
         
-        results[idname] = code
+        #results[idname] = code
+        results.append( {'id':idname, 'rle_mask':code  } )
+        
 
-    results = [ {'id': str(k), 'rle_mask': ' '.join( map(str, v) )  } for k,v in results.items()  ]
+    #results = [ {'id': str(k), 'rle_mask': ' '.join( map(str, v) )  } for k,v in results.items()  ]    
     submission = pd.DataFrame(results).astype(str)
     submission.to_csv(filename, index=None, encoding='utf-8')
 

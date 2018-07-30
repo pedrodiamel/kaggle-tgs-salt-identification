@@ -22,7 +22,7 @@ from torchlib.segneuralnet import SegmentationNeuralNet
 from torchlib.transforms import functional as F
 from torchlib.utility import rle_encode, sigmoid
 from torchlib.metrics import intersection_over_union, intersection_over_union_thresholds
-
+from torchlib.netlosses import Dice
 
 from argparse import ArgumentParser
 
@@ -64,16 +64,18 @@ if __name__ == '__main__':
     # Load dataset
     print('>> Load dataset ...')
 
-    dataset  = TGSDataset(  
+    dataset = TGSDataset(  
         pathnamedataset, 
         'train', 
         num_channels=3,
         train=True, 
         files='train.csv',
         transform=transforms.Compose([
-            mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
             mtrans.ToTensor(),
-            mtrans.ToNormalization(), 
+            #mtrans.ToNormalization(), 
+            mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
             ])
         )
 
@@ -94,35 +96,51 @@ if __name__ == '__main__':
 
     y_pred = []
     y_true = []
+    
+    #dice = Dice()
+    #dices = []
 
-    for idx in tqdm( range( len(dataset) ) ):  
+    index = []
+    for idx in tqdm( range( len(dataset)  ) ):  #len(dataset)
         
         sample = dataset[ idx ]    
         mask = sample['label'][1,:,:].data.numpy()
-        mask = mask[92:92+116, 92:92+116]
+        #mask = mask[92:92+116, 92:92+116]
         
-        idname = dataset.data.getimagename( idx )
-        score = net( sample['image'].unsqueeze(0) )
+        idname = dataset.getimagename( idx )
+        score = net( sample['image'].unsqueeze(0) )        
         
-        score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_LINEAR )
-        mask  = F.resize_unet_inv_transform( mask , (101,101,3), 101, cv2.INTER_LINEAR )
-    
+        ###
+        #dices.append(dice(score.data.cpu(), sample['label'].data.unsqueeze(0)).data[0] )
+        #score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
+        ###            
+            
+        #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_LINEAR )
+        #mask  = F.resize_unet_inv_transform( mask , (101,101,3), 101, cv2.INTER_LINEAR )
+        
         pred  = np.argmax( score, axis=2 )
-        #pred  = sigmoid( score[:,:,0] ) > 0.5 
+        #pred  =  score[:,:,1]  > 0.5 #sigmoid()
+        
+        index.append( pred.sum() > 10 )
 
         y_true.append( mask.astype(int) )
         y_pred.append( pred.astype(int) )
         
-        
+    #print(dices)
+    #dices = np.stack(dices,axis=0)
+    #print(dices.mean())
+    
+    index  = np.stack( index , axis=0 )
     y_true = np.stack( y_true, axis=0 ) 
     y_pred = np.stack( y_pred, axis=0 )
         
-    iout = intersection_over_union_thresholds( y_true, y_pred )
+    iout = intersection_over_union_thresholds( y_true[index], y_pred[index] )
+    iou  = intersection_over_union( y_true[index], y_pred[index] )
 
     print('IOUT:', iout )
+    print('OUT:', iout )
 
     print('dir: {}'.format(filename))
     print('DONE!!!')
-
 
 
