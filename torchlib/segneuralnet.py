@@ -94,8 +94,7 @@ class SegmentationNeuralNet(NeuralNetAbstract):
         self.visimshow = gph.ImageVisdom(env_name=self.nameproject, imsize=(100,100) )
 
       
-    def training(self, data_loader, epoch=0):
-        
+    def training(self, data_loader, epoch=0):        
 
         #reset logger
         self.logger_train.reset()
@@ -111,26 +110,23 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             # measure data loading time
             data_time.update(time.time() - end)
             # get data (image, label, weight)
-            inputs, targets, weights = sample['image'], sample['label'], sample['weight']
-            batch_size = inputs.size(0)
+            inputs, targets, weights, depth = sample['image'], sample['label'], sample['weight'], sample['metadata']
+            batch_size = inputs.shape[0]
 
             if self.cuda:
-                targets = targets.cuda(non_blocking=True)
-                inputs_var  = Variable(inputs.cuda(),  requires_grad=False)
-                targets_var = Variable(targets.cuda(), requires_grad=False)
-                weights_var = Variable(weights.cuda(), requires_grad=False)
-            else:
-                inputs_var  = Variable(inputs,  requires_grad=False)
-                targets_var = Variable(targets, requires_grad=False)
-                weights_var = Variable(weights, requires_grad=False)
+                inputs  = inputs.cuda() 
+                targets = targets.cuda() 
+                weights = weights.cuda() 
+                depth   = depth.cuda() 
+            
 
-            # fit (forward)
-            outputs = self.net(inputs_var)
+            # fit (forward)            
+            outputs = self.net(inputs, depth) if self.s_arch == 'dunet' else self.net(inputs)            
 
             # measure accuracy and record loss
-            loss = self.criterion(outputs, targets_var, weights_var)            
-            accs = self.accuracy(outputs, targets_var )
-            dices = self.dice( outputs, targets_var )
+            loss = self.criterion(outputs, targets, weights)            
+            accs = self.accuracy(outputs, targets )
+            dices = self.dice( outputs, targets )
               
             # optimizer
             self.optimizer.zero_grad()
@@ -151,6 +147,7 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             if i % self.print_freq == 0:  
                 self.logger_train.logger( epoch, epoch + float(i+1)/len(data_loader), i, len(data_loader), batch_time,   )
 
+
     def evaluate(self, data_loader, epoch=0):
         
         # reset loader
@@ -164,27 +161,22 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             for i, sample in enumerate(data_loader):
                 
                 # get data (image, label)
-                inputs, targets, weights = sample['image'], sample['label'], sample['weight']
-                batch_size = inputs.size(0)
+                inputs, targets, weights, depth = sample['image'], sample['label'], sample['weight'], sample['metadata']
+                batch_size = inputs.shape[0]
 
                 if self.cuda:
-                    targets = targets.cuda( non_blocking=True )
-                    inputs_var  = Variable(inputs.cuda(),  requires_grad=False, volatile=True)
-                    targets_var = Variable(targets.cuda(), requires_grad=False, volatile=True)
-                    weights_var = Variable(weights.cuda(), requires_grad=False, volatile=True)
-                else:
-                    inputs_var  = Variable(inputs,  requires_grad=False, volatile=True)
-                    targets_var = Variable(targets, requires_grad=False, volatile=True)
-                    weights_var = Variable(weights, requires_grad=False, volatile=True)
-                
+                    inputs  = inputs.cuda()
+                    targets = targets.cuda()
+                    weights = weights.cuda()
+                    depth   = depth.cuda()
+                 
                 # fit (forward)
-                outputs = self.net(inputs_var)
+                outputs = self.net(inputs, depth) if self.s_arch == 'dunet' else self.net(inputs)
 
                 # measure accuracy and record loss
-                loss = self.criterion(outputs, targets_var, weights_var)   
-                accs = self.accuracy(outputs, targets_var )
-                dices = self.dice( outputs, targets_var )  
-               
+                loss  = self.criterion(outputs, targets, weights)   
+                accs  = self.accuracy(outputs, targets )
+                dices = self.dice( outputs, targets )                 
 
                 # measure elapsed time
                 batch_time.update(time.time() - end)
@@ -221,19 +213,19 @@ class SegmentationNeuralNet(NeuralNetAbstract):
         #vizual_freq
         if epoch % self.view_freq == 0:
             
-            prob = F.softmax(outputs,dim=1)
+            prob = F.softmax(outputs, dim=1)
             prob = prob.data[0]
-            _,maxprob = torch.max(prob,0)
+            maxprob = torch.argmax(prob, 0)
             
-            self.visheatmap.show('Label', targets_var.data.cpu()[0].numpy()[1,:,:] )
-            self.visheatmap.show('Weight map', weights_var.data.cpu()[0].numpy()[0,:,:])
-            self.visheatmap.show('Image', inputs_var.data.cpu()[0].numpy()[0,:,:])
+            self.visheatmap.show('Label', targets.data.cpu()[0].numpy()[1,:,:] )
+            self.visheatmap.show('Weight map', weights.data.cpu()[0].numpy()[0,:,:])
+            self.visheatmap.show('Image', inputs.data.cpu()[0].numpy()[0,:,:])
             self.visheatmap.show('Max prob',maxprob.cpu().numpy().astype(np.float32) )
             for k in range(prob.shape[0]):                
                 self.visheatmap.show('Heat map {}'.format(k), prob.cpu()[k].numpy() )
-                
         
         return acc
+
 
     def test(self, data_loader ):
         
@@ -253,7 +245,7 @@ class SegmentationNeuralNet(NeuralNetAbstract):
                 x = inputs.cuda() if self.cuda else inputs    
                 
                 # fit (forward)
-                yhat = self.net(x)
+                yhat = self.net(x, z) if self.s_arch == 'dunet' else self.net(x)
                 yhat = F.softmax(yhat, dim=1)    
                 yhat = pytutils.to_np(yhat)
 
@@ -263,18 +255,18 @@ class SegmentationNeuralNet(NeuralNetAbstract):
         return ids, masks
 
     
-    def __call__(self, image):        
+    def __call__(self, image, z):        
         
         # switch to evaluate mode
         self.net.eval()
         with torch.no_grad():
             x = image.cuda() if self.cuda else image    
-            yhat = F.softmax( self.net(x), dim=1 )
+            z = z.cuda() if self.cuda else z 
+            yhat = self.net(x, z) if self.s_arch == 'dunet' else self.net(x)
+            yhat = F.softmax( yhat, dim=1 )
             yhat = pytutils.to_np(yhat).transpose(2,3,1,0)[...,0]
 
         return yhat
-
-    
 
 
     def _create_model(self, arch, num_output_channels, num_input_channels, pretrained ):
