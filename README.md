@@ -5,15 +5,15 @@ Segment salt deposits beneath the Earth's surface
 
 ## Results
 
-| Branch   | Name    | CV   | LB    | Description               |
-|:--------:|:-------:|:----:|:-----:|:-------------------------:|
-| classic  | unet    |      |       |                           |
-|          |         |      |       |                           |
-|          |         |      |       |                           |
-| depth    |         |      |       |                           |
-|          |         |      |       |                           |
-|          |         |      |       |                           |
-|          |         |      |       |                           |
+| Branch   | Name     | CV      | LB    | Description               |
+|---------:|---------:|:-------:|:-----:|:--------------------------|
+| classic  | unet     |         |       |                           |
+|          | unetrest | 0.8134  | 0.782 | pre-train resnet135       |
+|          |          |         |       |                           |
+| depth    |          |         |       |                           |
+|          |          |         |       |                           |
+|          |          |         |       |                           |
+|          |          |         |       |                           |
 
 
 
