@@ -122,7 +122,6 @@ class DUNet(nn.Module):
 
         return y
 
-
 class unetConv2(nn.Module):
     def __init__(self, in_size, out_size, is_batchnorm):
         super(unetConv2, self).__init__()
