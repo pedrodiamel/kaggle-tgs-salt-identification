@@ -264,7 +264,7 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             z = z.cuda() if self.cuda else z 
             yhat = self.net(x, z) if self.s_arch == 'dunet' else self.net(x)
             yhat = F.softmax( yhat, dim=1 )
-            yhat = pytutils.to_np(yhat).transpose(2,3,1,0)[...,0]
+            #yhat = pytutils.to_np(yhat).transpose(2,3,1,0)[...,0]
 
         return yhat
 

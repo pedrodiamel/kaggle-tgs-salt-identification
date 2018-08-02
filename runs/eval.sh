@@ -8,7 +8,7 @@ PROJECTNAME='exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challen
 PATHNAMEOUT='.'
 FILENAME='result.txt'
 PATHMODEL='models'
-NAMEMODEL='chk000070.pth.tar' #'model_best.pth.tar' #'chk000080.pth.tar'
+NAMEMODEL='chk000266.pth.tar' #'model_best.pth.tar' #'chk000080.pth.tar'
 MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
 
 python ../eval.py \

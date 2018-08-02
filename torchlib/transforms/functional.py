@@ -5,7 +5,20 @@
 import numpy as np
 import cv2
 import math
+import torch
 
+def flip(x, dim):
+    dim = x.dim() + dim if dim < 0 else dim
+    inds = tuple(slice(None, None) if i != dim
+             else x.new(torch.arange(x.size(i)-1, -1, -1).tolist()).long()
+             for i in range(x.dim()))
+    return x[inds]
+
+def flipud(x):
+    return flip(x,1)
+    
+def fliplr(x):
+    return flip(x,2)
 
 def resize_unet_inv_transform(img, imgsize, fov_size, interpolate_mode): 
     

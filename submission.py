@@ -77,12 +77,13 @@ if __name__ == '__main__':
             mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
             ])
         )
-
+    
+    
     # load model
     print('>> Load model ...')
 
     net = SegmentationNeuralNet( 
-        patchproject=project, 
+        patchproject=project,  
         nameproject=projectname, 
         no_cuda=cuda, 
         parallel=parallel, 
@@ -96,14 +97,27 @@ if __name__ == '__main__':
     #folder_files = os.path.expanduser( os.path.join(pathnamedataset, 'sample_submission.csv' )  )
     #submission = pd.read_csv( folder_files )
     #results = { i:rlecode  for i,rlecode in zip( submission['id'], submission['rle_mask'] ) }  
+    
+    tta = False
     results = list()    
     for idx in tqdm( range( len(dataset) ) ):   
         
         sample = dataset[ idx ]    
         idname = dataset.data.getimagename( idx )
-        score = net( sample['image'].unsqueeze(0) )
-        #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_CUBIC )
-        #score = cv2.resize(score, (101, 101) , interpolation = cv2.INTER_CUBIC)
+        image  = sample['image'].unsqueeze(0)
+        
+        score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+        if tta:
+            score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+            score   = score + F.fliplr( score_t )
+            score_t = net( F.flipud( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+            score   = score + F.flipud( score_t )    
+            score = score/3
+            
+        score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
+        
+        #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_CUBIC ) #unet
+        #score = cv2.resize(score, (101, 101) , interpolation = cv2.INTER_CUBIC) #unet
     
         pred  = np.argmax( score, axis=2 )   
         #pred  = sigmoid( score[:,:,0] ) > 0.5
