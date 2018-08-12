@@ -31,9 +31,9 @@ class Conv2D(nn.Module):
         return x
 
 class DilateCenter(nn.Module):
-    def __init__(self, in_size, out_size, kernel_size=3, is_batchnorm=False, cuda=False ):
+    def __init__(self, in_size, out_size, kernel_size=3, is_batchnorm=False ):
         super(DilateCenter, self).__init__()
-        self.cuda = cuda
+        
         self.in_size = in_size
         self.out_size = out_size
         self.conv_init = Conv2D( in_size, out_size, kernel_size, s=1, pad=0, is_batchnorm=is_batchnorm )     
@@ -44,10 +44,10 @@ class DilateCenter(nn.Module):
         self.relu = nn.ReLU()
         self.conv_end = Conv2D( out_size, out_size, kernel_size, s=1, pad=0, is_batchnorm=is_batchnorm )
 
-    def _tovar(self, x): return Variable(x.cuda()) if self.cuda else Variable(x)
+    
     def forward(self, x): 
         
-        skip = self._tovar( torch.zeros( x.shape[0], self.out_size, x.shape[2]-2,x.shape[3]-2 ) )
+        skip = torch.zeros( x.shape[0], self.out_size, x.shape[2]-2,x.shape[3]-2 ).cuda()
         
         x1 = self.conv_init(x); skip+=x1
         x2 = self.conv_d1(x1);  skip+=x2 
@@ -88,15 +88,15 @@ class DUNet(nn.Module):
         self.depth_lin1 = nn.Linear(1, 100)
         self.depth_lin2 = nn.Linear(100, 11*11)
         self.depth_lin3 = nn.Linear(11*11, 11*11)
+        
 
-
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                init.xavier_normal_(m.weight)
-                init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+        #for m in self.modules():
+        #    if isinstance(m, nn.Conv2d):
+        #        init.xavier_normal_(m.weight)
+        #        init.constant_(m.bias, 0)
+        #    elif isinstance(m, nn.BatchNorm2d):
+        #        m.weight.data.fill_(1)
+        #        m.bias.data.zero_()
 
     def forward(self, x, d):
 
@@ -109,7 +109,7 @@ class DUNet(nn.Module):
 
         d1 = F.relu( self.depth_lin1(d) )
         d2 = F.relu( self.depth_lin2(d1) )
-        d3 = F.relu( self.depth_lin3(d2) )
+        d3 = F.sigmoid( self.depth_lin3(d2) )
         
         
         d3 = d3.contiguous().view( d3.shape[0], 1, 11, 11 ) #[n, 1, 121] -> [n, 1, 121]

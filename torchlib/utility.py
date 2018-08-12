@@ -2,6 +2,12 @@
 
 import numpy as np
 
+
+def norm(x):
+    x = x-x.min()
+    x = x / x.max()
+    return x
+
 def sigmoid(x):
     return 1. / (1 + np.exp(-x))
 
@@ -33,8 +39,8 @@ def rle_encode(x):
         rle[-1] += 1
         prev = b
 
-    if len(rle) != 0 and rle[-1] + rle[-2] == x.size:
-        rle[-2] = rle[-2] - 1
+    #if len(rle) != 0 and rle[-1] + rle[-2] == x.size:
+    #    rle[-2] = rle[-2] - 1
 
     return rle
 

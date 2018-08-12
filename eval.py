@@ -22,7 +22,7 @@ from torchlib.segneuralnet import SegmentationNeuralNet
 from torchlib.transforms import functional as F
 from torchlib.utility import rle_encode, sigmoid
 from torchlib.metrics import intersection_over_union, intersection_over_union_thresholds
-from torchlib.netlosses import Dice
+from torchlib.postprocessing import tgspostprocess
 
 from argparse import ArgumentParser
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         files='train.csv',
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
-            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101), #unet
             mtrans.ToTensor(),
             #mtrans.ToNormalization(), 
             mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
@@ -97,38 +97,48 @@ if __name__ == '__main__':
     y_pred = []
     y_true = []
     
-    #dice = Dice()
-    #dices = []
 
     index = []
-    for idx in tqdm( range( len(dataset)  ) ):  #len(dataset)
+    tta = False
+    for idx in tqdm( range( len(dataset) ) ):  #len(dataset)
         
         sample = dataset[ idx ]    
         mask = sample['label'][1,:,:].data.numpy()
-        #mask = mask[92:92+116, 92:92+116]
+        #mask = mask[92:92+116, 92:92+116] #unet
         
         idname = dataset.getimagename( idx )
-        score = net( sample['image'].unsqueeze(0) )        
+        #score = net( sample['image'].unsqueeze(0).cuda(), sample['metadata'].unsqueeze(0).cuda() )   
+        image  = sample['image'].unsqueeze(0)
+        image  = image.cuda()
         
-        ###
-        #dices.append(dice(score.data.cpu(), sample['label'].data.unsqueeze(0)).data[0] )
-        #score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
-        ###            
-            
-        #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_LINEAR )
-        #mask  = F.resize_unet_inv_transform( mask , (101,101,3), 101, cv2.INTER_LINEAR )
+        if (image-image.min()).sum() == 0:
+            continue
+        
+        score = net( image, sample['metadata'].unsqueeze(0).cuda() )
+        if tta:
+            score_t = net( F.fliplr( image ), sample['metadata'].unsqueeze(0).cuda() )
+            score   = score + F.fliplr( score_t )
+            score_t = net( F.flipud( image ), sample['metadata'].unsqueeze(0).cuda() )
+            score   = score + F.flipud( score_t )
+            score_t = net( F.flipud( F.fliplr( image ) ), sample['metadata'].unsqueeze(0).cuda() )
+            score   = score + F.flipud( F.fliplr( score_t ) )
+            score = score/4
+
+        score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
+        
+                    
+        #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_CUBIC )  #unet
+        #mask  = F.resize_unet_inv_transform( mask , (101,101,3), 101, cv2.INTER_LINEAR ) #unet
         
         pred  = np.argmax( score, axis=2 )
-        #pred  =  score[:,:,1]  > 0.5 #sigmoid()
+        #pred  =  score[:,:,1]  > 0.40 #sigmoid()
+        #pred = tgspostprocess(score)
         
         index.append( pred.sum() > 10 )
 
         y_true.append( mask.astype(int) )
         y_pred.append( pred.astype(int) )
         
-    #print(dices)
-    #dices = np.stack(dices,axis=0)
-    #print(dices.mean())
     
     index  = np.stack( index , axis=0 )
     y_true = np.stack( y_true, axis=0 ) 
