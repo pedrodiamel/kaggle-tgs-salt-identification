@@ -111,6 +111,7 @@ class DUNet(nn.Module):
         d2 = F.relu( self.depth_lin2(d1) )
         d3 = F.relu( self.depth_lin3(d2) )
         
+        
         d3 = d3.contiguous().view( d3.shape[0], 1, 11, 11 ) #[n, 1, 121] -> [n, 1, 121]
         center = torch.cat( (d3, center), dim=1 )
 
