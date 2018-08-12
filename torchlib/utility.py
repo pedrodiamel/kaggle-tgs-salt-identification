@@ -2,6 +2,12 @@
 
 import numpy as np
 
+
+def norm(x):
+    x = x-x.min()
+    x = x / x.max()
+    return x
+
 def sigmoid(x):
     return 1. / (1 + np.exp(-x))
 

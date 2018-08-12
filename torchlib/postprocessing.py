@@ -53,57 +53,21 @@ def postprocess(image, contour):
 
     return labels
 
-def mpostprocess(score):
+def tgspostprocess(score):
     
-    predition = np.argmax(score[:,:,:3], axis=2).astype('uint8') 
-    predition = predition == 1
-
-    if predition.sum() < 20:
+    predition = np.argmax(score, axis=2).astype('uint8') 
+    if predition.sum() < 10:
         return np.zeros_like( predition ) # not predition !!!
 
-    score_prob = sigmoid(score)
-    m = score_prob[:,:,1]
-    #c = score_prob[:,:,2]
-    
-    m_thresh = threshold_otsu(m)
-    #c_thresh = threshold_otsu(c)
-    m_b = m > m_thresh
-    #c_b = c > c_thresh
-
-    predition = ndi.binary_fill_holes(predition)
-    predition = morph.opening(predition,morph.disk(1))
-
-    mk, _ = ndi.label(predition)
-
-    distance = ndi.distance_transform_edt(predition)
-    labels = morph.watershed(-distance,  mk, mask=m_b  )
-
-    if labels.sum() < 20:
-        return np.zeros_like( labels ) # not predition !!!
-
-    labels = add_dropped_water_blobs(labels, m_b)
-
-    initial_mask_binary = (m_b).astype(np.uint8)
-    labels = drop_artifacts_per_label(labels, initial_mask_binary)
-    labels = drop_small(labels, min_size=20)
-
-    if labels.sum() < 20:
-        return np.zeros_like( labels ) # not predition !!!
-
-
+    labels = predition
     labels = fill_holes_per_blob(labels)
     labels = decompose(labels)
-
-    #ellipse aproximate
-    #elp = fit_ellipse(labels)
-    #labels_elp = create_ellipses_mask(score_prob.shape, elp)
-    #labels_elp = create_label(labels_elp)
-    #labels_elp = decompose(labels_elp)
-
     labels = clean_label( labels )
+        
+    if labels.sum() < 10:
+        return np.zeros_like( predition ) # not predition !!!
+    
     labels = create_label(labels )
-    #labels = decompose( labels )
-
     return labels
 
 def mpostprocessthresh(score, prob=0.5):
@@ -137,7 +101,6 @@ def mpostprocessmax(score):
 def clean_label( masks ):
         
     cln_mask = []
-    mean_area, radio = mean_blob_size( masks.max(axis=0)  )
     for mask in masks:        
         mask = (mask>128).astype(np.uint8)                
         try:
@@ -149,7 +112,7 @@ def clean_label( masks ):
                 continue
             
             area = cv2.contourArea(contour)
-            if area <= 10 or (mean_area !=1 and mean_area/area < 0.2):  # skip ellipses smaller then 5x5
+            if area <= 10:  # skip smaller then 5x5
                 continue
             
             epsilon = 0.1*cv2.arcLength(contour,True)

@@ -21,6 +21,7 @@ from torchlib.datasets.tgsdata import TGSDataset
 from torchlib.segneuralnet import SegmentationNeuralNet
 from torchlib.transforms import functional as F
 from torchlib.utility import rle_encode, sigmoid
+from torchlib.postprocessing import tgspostprocess
 
 
 from argparse import ArgumentParser
@@ -98,7 +99,7 @@ if __name__ == '__main__':
     #submission = pd.read_csv( folder_files )
     #results = { i:rlecode  for i,rlecode in zip( submission['id'], submission['rle_mask'] ) }  
     
-    tta = False
+    tta = True
     results = list()    
     for idx in tqdm( range( len(dataset) ) ):   
         
@@ -106,21 +107,29 @@ if __name__ == '__main__':
         idname = dataset.data.getimagename( idx )
         image  = sample['image'].unsqueeze(0)
         
+        if (image-image.min()).sum() == 0:
+            results.append( {'id':idname, 'rle_mask':' '  } )
+            continue
+        
         score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
         if tta:
             score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
             score   = score + F.fliplr( score_t )
             score_t = net( F.flipud( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
             score   = score + F.flipud( score_t )    
-            score = score/3
+            score_t = net( F.flipud( F.fliplr( image.cuda() ) ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+            score   = score + F.flipud( F.fliplr( score_t ) )
+            score = score/4
             
         score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
         
         #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_CUBIC ) #unet
         #score = cv2.resize(score, (101, 101) , interpolation = cv2.INTER_CUBIC) #unet
     
-        pred  = np.argmax( score, axis=2 )   
+        pred  = np.argmax( score, axis=2 )          
         #pred  = sigmoid( score[:,:,0] ) > 0.5
+        #pred = tgspostprocess(score)
+        
         pred  = cv2.resize(pred.astype(float), (101, 101) , interpolation=cv2.INTER_LINEAR)  
         pred  = pred.astype(int)
 

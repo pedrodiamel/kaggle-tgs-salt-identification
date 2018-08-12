@@ -15,10 +15,10 @@ def flip(x, dim):
     return x[inds]
 
 def flipud(x):
-    return flip(x,1)
+    return flip(x,2)
     
 def fliplr(x):
-    return flip(x,2)
+    return flip(x,3)
 
 def resize_unet_inv_transform(img, imgsize, fov_size, interpolate_mode): 
     

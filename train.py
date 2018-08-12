@@ -116,15 +116,15 @@ def main():
         num_channels=num_channels,
         transform=transforms.Compose([
             mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
-            mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),   
-            mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
-            #mtrans.RandomCrop( (256,256), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
+            mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ), 
 
+            mtrans.ToResize( (300,300), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            mtrans.RandomCrop( (256,256), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
             #mtrans.ToResize( (150,150), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.RandomCrop( (101,101), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
             
             mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ),
-            #mtrans.RandomGeometricalTransform( angle=45, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101),                    
+            mtrans.RandomGeometricalTransform( angle=30, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101),                    
                         
             mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
             mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ), prob=0.50 ),
@@ -132,6 +132,7 @@ def main():
             #mtrans.ToRandomTransform( mtrans.ToGaussianBlur(), prob=0.15 ),
             
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            #mtrans.RandomElasticDistort( size_grid=50, padding_mode=cv2.BORDER_REFLECT101 ),
             mtrans.ToTensor(),
             mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
             #mtrans.ToNormalization(),
