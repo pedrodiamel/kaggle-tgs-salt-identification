@@ -6,7 +6,7 @@ import numpy as np
 
 
 from .weightmaps import getweightmap
-from .imageutl import  TGSProvide
+from .imageutl import  TGSProvide, TGSExProvide
 from pytvision.datasets import utility 
 from pytvision.transforms.aumentation import  ObjectImageMaskMetadataAndWeightTransform, ObjectImageMetadataTransform
 
@@ -32,16 +32,17 @@ class TGSDataset(object):
         folders_images='images',
         folders_masks='masks',
         files = 'train.csv',
-        metadata = 'depths.csv',
+        metadata = 'metadata_train.csv',
         ext='png',
         transform=None,
         count=None, 
         num_channels=3,
+        filter=True,
         ):
         """Initialization       
         """            
            
-        self.data = TGSProvide.create( 
+        self.data = TGSExProvide.create( 
                 base_folder, 
                 sub_folder, 
                 train,
@@ -49,6 +50,7 @@ class TGSDataset(object):
                 folders_masks,
                 files,
                 metadata,
+                filter,
                 )
         
         self.transform = transform  

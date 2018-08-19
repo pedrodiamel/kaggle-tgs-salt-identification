@@ -3,7 +3,7 @@ import sys
 sys.path.append('../')
 from torchlib.datasets import TGSDataset
 from torchlib.datasets import weightmaps
-from torchlib.datasets.imageutl import TGSProvide
+from torchlib.datasets.imageutl import TGSProvide, TGSExProvide
  
 
 import matplotlib.pyplot as plt 
@@ -15,7 +15,7 @@ def summary( tensor ):
 
 def test_tgs_provide():
     
-    path  = '~/.datasets/tgs_salt'
+    path  = '~/.kaggle/competitions/tgs-salt-identification-challenge/'
     #data  = TGSProvide.create(  path, sub_folder='test', train=False, files='sample_submission.csv' )
     #name, image, depth = data[ np.random.randint( len(data) ) ]
 
@@ -37,9 +37,33 @@ def test_tgs_provide():
     plt.imshow( weightmaps.getweightmap(mask) )
     plt.show()
 
+def test_tgs_ext_provide():
+    
+    path  = '~/.kaggle/competitions/tgs-salt-identification-challenge/'
+    #data  = TGSProvide.create(  path, sub_folder='test', train=False, files='sample_submission.csv' )
+    #name, image, depth = data[ np.random.randint( len(data) ) ]
+
+    data  = TGSExProvide.create(  path, sub_folder='train', train=True, files='train.csv', metadata='metadata_train.csv', filter=True )
+    name, image, mask, depth = data[ np.random.randint( len(data) ) ]
+    
+
+    print(name)
+    summary(image)
+    summary(mask)
+    summary(depth)
+
+    plt.figure()
+    plt.subplot(131)
+    plt.imshow(image)
+    plt.subplot(132)
+    plt.imshow(mask)
+    plt.subplot(133)
+    plt.imshow( weightmaps.getweightmap(mask) )
+    plt.show()
+
 def test_tgs_train_dataset():       
 
-    path  = '~/.datasets/tgs_salt'
+    path  = '~/.kaggle/competitions/tgs-salt-identification-challenge/'
     data  = TGSDataset(  path, 'train', files='train.csv' )
     sample = data[ np.random.randint( len(data) ) ]
 
@@ -62,7 +86,7 @@ def test_tgs_train_dataset():
 
 def test_tgs_test_dataset():       
 
-    path  = '~/.datasets/tgs_salt'
+    path  = '~/.kaggle/competitions/tgs-salt-identification-challenge/'
     data  = TGSDataset(  path, 'test', train=False, files='sample_submission.csv' )
     sample = data[ np.random.randint( len(data) ) ]
 
@@ -80,4 +104,5 @@ def test_tgs_test_dataset():
 
 # test_tgs_provide()
 # test_tgs_train_dataset()
-test_tgs_test_dataset()
+# test_tgs_test_dataset()
+test_tgs_ext_provide()
