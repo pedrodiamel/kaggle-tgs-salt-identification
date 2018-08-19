@@ -70,8 +70,10 @@ if __name__ == '__main__':
         num_channels=3,
         train=True, 
         files='train.csv',
+        metadata='metadata_train.csv',
+        filter=False,
         transform=transforms.Compose([
-            mtrans.ToResize( (128,128), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101), #unet
             mtrans.ToTensor(),
             #mtrans.ToNormalization(), 
@@ -107,12 +109,18 @@ if __name__ == '__main__':
         #mask = mask[92:92+116, 92:92+116] #unet
         
         idname = dataset.getimagename( idx )
+        metadata = dataset.data.getmetadata(idx)
+        
         #score = net( sample['image'].unsqueeze(0).cuda(), sample['metadata'].unsqueeze(0).cuda() )   
         image  = sample['image'].unsqueeze(0)
         image  = image.cuda()
         
-        if (image-image.min()).sum() == 0:
+        #f (image-image.min()).sum() == 0:
+        #   continue
+        
+        if metadata['mg'] < 0.3:
             continue
+        
         
         score = net( image, sample['metadata'].unsqueeze(0).cuda() )
         if tta:

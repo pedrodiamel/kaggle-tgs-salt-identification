@@ -10,10 +10,10 @@ PROJECTNAME='exp_tgs_unetresnet_mcedice_adam_tgs-salt-identification-challenge_0
 PATHNAMEOUT='.'
 FILENAME='submission.csv'
 PATHMODEL='models'
-NAMEMODEL='chk000210.pth.tar' 
+NAMEMODEL='chk000335.pth.tar' 
 MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
 
-python ../submission_ens.py \
+python ../submission.py \
 --project=$PROJECT \
 --projectname=$PROJECTNAME \
 --pathdataset=$PATHDATASET \

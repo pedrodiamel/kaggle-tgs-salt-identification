@@ -107,11 +107,18 @@ if __name__ == '__main__':
         
         sample = dataset[ idx ]    
         idname = dataset.data.getimagename( idx )
-        image  = sample['image'].unsqueeze(0)
+        metadata = dataset.data.getmetadata(idx)
         
-        if (image-image.min()).sum() == 0:
+        image  = sample['image'].unsqueeze(0)        
+        
+        #if (image-image.min()).sum() == 0:
+        #    results.append( {'id':idname, 'rle_mask':' '  } )
+        #    continue
+        
+        if metadata['mg'] < 0.3:
             results.append( {'id':idname, 'rle_mask':' '  } )
-            continue
+            continue        
+        
         
         score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
         if tta:
