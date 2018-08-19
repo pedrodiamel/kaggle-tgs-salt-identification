@@ -70,8 +70,6 @@ if __name__ == '__main__':
         num_channels=3,
         train=False, 
         files='sample_submission.csv',
-        metadata='metadata_test.csv',
-        filter=False,
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
@@ -85,17 +83,29 @@ if __name__ == '__main__':
     # load model
     print('>> Load model ...')
 
-    net = SegmentationNeuralNet( 
-        patchproject=project,  
-        nameproject=projectname, 
-        no_cuda=cuda, 
-        parallel=parallel, 
-        seed=seed, 
-        gpu=gpu 
-        )
+    # /$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
+    dataprojects = [
+        ['exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000335.pth.tar'],
+        ['exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000510.pth.tar'],
+        #['exp_tgs_unetresnet_mcedice_adam_tgs-salt-identification-challenge_002', 'chk000210.pth.tar'],
+        #['exp_tgs_unet11_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000340.pth.tar'],        
+    ]
+    
+    nets = []
+    for projectname, model in dataprojects:
+        net = SegmentationNeuralNet( 
+            patchproject=project,  
+            nameproject=os.path.join(project, projectname), 
+            no_cuda=cuda, 
+            parallel=parallel, 
+            seed=seed, 
+            gpu=gpu 
+            )
 
-    if net.load( pathnamemodel ) is not True:
-        assert(False)
+        if net.load( os.path.join(project, projectname, 'models', model) ) is not True:
+            assert(False)
+            
+        nets.append(net)
 
     #folder_files = os.path.expanduser( os.path.join(pathnamedataset, 'sample_submission.csv' )  )
     #submission = pd.read_csv( folder_files )
@@ -113,17 +123,26 @@ if __name__ == '__main__':
             results.append( {'id':idname, 'rle_mask':' '  } )
             continue
         
-        score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-        if tta:
-            score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.fliplr( score_t )
-            score_t = net( F.flipud( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.flipud( score_t )    
-            score_t = net( F.flipud( F.fliplr( image.cuda() ) ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.flipud( F.fliplr( score_t ) )
-            score = score/4
-            
-        score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
+        
+        scores = []
+        for net in nets:
+            score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+            if tta:
+                score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+                score   = score + F.fliplr( score_t )
+                score_t = net( F.flipud( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+                score   = score + F.flipud( score_t )    
+                score_t = net( F.flipud( F.fliplr( image.cuda() ) ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+                score   = score + F.flipud( F.fliplr( score_t ) )
+                score = score/4
+                
+                scores.append( score )
+
+        scores = torch.stack(scores,dim=0)
+        ## mean ruler
+        score = score.mean(dim=0)
+        ## to numpy
+        score = score.data.cpu().numpy().transpose(1,2,0)
         
         #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_CUBIC ) #unet
         #score = cv2.resize(score, (101, 101) , interpolation = cv2.INTER_CUBIC) #unet
