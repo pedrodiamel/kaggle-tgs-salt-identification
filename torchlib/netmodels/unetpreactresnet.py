@@ -128,7 +128,7 @@ class ConvRelu(nn.Module):
         return x
 
 class DecoderBlockV2(nn.Module):
-    def __init__(self, in_channels, middle_channels, out_channels, is_deconv=True):
+    def __init__(self, in_channels, middle_channels, out_channels, is_deconv=True, scale_factor=2):
         super(DecoderBlockV2, self).__init__()
         self.in_channels = in_channels
 
@@ -145,7 +145,7 @@ class DecoderBlockV2(nn.Module):
             )
         else:
             self.block = nn.Sequential(
-                nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
+                nn.Upsample(scale_factor=scale_factor, mode='bilinear', align_corners=False),
                 ConvRelu(in_channels, middle_channels),
                 ConvRelu(middle_channels, out_channels),
             )
@@ -198,44 +198,27 @@ class UNetPreActResNet(nn.Module):
         self.dec4 = DecoderBlockV2(bottom_channel_nr // 2 + num_filters * 8, num_filters * 8 * 2, num_filters * 8, is_deconv)
         self.dec3 = DecoderBlockV2(bottom_channel_nr // 4 + num_filters * 8, num_filters * 4 * 2, num_filters * 2, is_deconv)
         self.dec2 = DecoderBlockV2(bottom_channel_nr // 8 + num_filters * 2, num_filters * 2 * 2, num_filters * 2 * 2, is_deconv)
-        self.dec1 = DecoderBlockV2(num_filters * 2 * 2, num_filters * 2 * 2, num_filters, is_deconv)
+        self.dec1 = DecoderBlockV2(num_filters * 2 * 2, num_filters * 2 * 2, num_filters, is_deconv, scale_factor=1)
         self.dec0 = ConvRelu(num_filters, num_filters)
         self.final = nn.Conv2d(num_filters, num_classes, kernel_size=1)
 
     def forward(self, x):         
 
+        conv1 = self.conv1(x);      
+        conv2 = self.conv2(conv1);  
+        conv3 = self.conv3(conv2);  
+        conv4 = self.conv4(conv3);  
+        conv5 = self.conv5(conv4);  
+        pool = self.pool(conv5);                         
+        center = self.center(pool);   
+        dec5 = self.dec5(torch.cat([center, conv5], 1));  
+        dec4 = self.dec4(torch.cat([dec5, conv4], 1));   
+        dec3 = self.dec3(torch.cat([dec4, conv3], 1));   
+        dec2 = self.dec2(torch.cat([dec3, conv2], 1));         
+        dec1 = self.dec1(dec2);                               
+        dec0 = self.dec0(dec1);                               
 
-        print(x.shape)
-        conv1 = self.conv1(x);      print(conv1.shape, 'conv1')
-        conv2 = self.conv2(conv1);  print(conv2.shape, 'conv2')
-        conv3 = self.conv3(conv2);  print(conv3.shape, 'conv3') 
-        conv4 = self.conv4(conv3);  print(conv4.shape) 
-        conv5 = self.conv5(conv4);  print(conv5.shape)
-
-        pool = self.pool(conv5);                         print(pool.shape) 
-        center = self.center(pool);                      print(center.shape, 'center')
-          
-
-        dec5 = self.dec5(torch.cat([center, conv5], 1)); print(dec5.shape)     
-
-        
-        assert(False)  
-
-        dec4 = self.dec4(torch.cat([dec5, conv4], 1));   print(dec4.shape)
-        dec3 = self.dec3(torch.cat([dec4, conv3], 1));   print(dec3.shape)
-        dec2 = self.dec2(torch.cat([dec3, conv2], 1));   print(dec2.shape)        
-        dec1 = self.dec1(dec2)     
-
-         
-        dec0 = self.dec0(dec1)
-
-
-
-        y = self.final(F.dropout2d(dec0, p=self.dropout_2d))
-
-
-        return y
-
+        return self.final(F.dropout2d(dec0, p=self.dropout_2d))
 
 
 
@@ -246,7 +229,7 @@ __all__ = ['UNetPreActResNet', 'unetpreactresnet152']
 def unetpreactresnet152(pretrained=False, **kwargs):
     """"UNetResNet model architecture
     """
-    model = UNetPreActResNet(encoder_depth=34, pretrained=pretrained, **kwargs)
+    model = UNetPreActResNet(encoder_depth=152, pretrained=pretrained, **kwargs)
     if pretrained == True:
         #model.load_state_dict(state['model'])
         pass
@@ -254,13 +237,12 @@ def unetpreactresnet152(pretrained=False, **kwargs):
 
 
 
-
 def test():
-    net = unetpreactresnet152(num_classes=1, in_channels=3 )
+    net = unetpreactresnet152(num_classes=2, in_channels=3 )
     y = net( torch.randn(10,3,64,64) )
     print(y.size())
 
-if __name__ == "__main__":
-    test()
-# test()
+#if __name__ == "__main__":
+#    test()
+
 

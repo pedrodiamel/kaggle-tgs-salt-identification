@@ -120,7 +120,7 @@ def main():
             mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
             mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ), 
 
-            mtrans.ToResize( (128,128), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            mtrans.ToResize( (512,512), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.RandomCrop( (512,512), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
             #mtrans.ToResize( (150,150), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.RandomCrop( (101,101), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
@@ -153,7 +153,7 @@ def main():
         metadata='metadata_train.csv',
         filter=True,
         transform=transforms.Compose([
-            mtrans.ToResize( (128,128), resize_mode='squash' ),
+            mtrans.ToResize( (512,512), resize_mode='squash' ),
             #mtrans.RandomCrop( (255,255), limit=50, padding_mode=cv2.BORDER_CONSTANT  ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
             mtrans.ToTensor(),
