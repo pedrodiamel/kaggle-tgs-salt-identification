@@ -70,6 +70,8 @@ if __name__ == '__main__':
         num_channels=3,
         train=False, 
         files='sample_submission.csv',
+        metadata='metadata_test.csv',
+        filter=False,
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),

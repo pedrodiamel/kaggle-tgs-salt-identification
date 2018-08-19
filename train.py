@@ -114,6 +114,8 @@ def main():
         tgsdata.train, 
         count=16000,
         num_channels=num_channels,
+        metadata='metadata_train.csv',
+        filter=True,
         transform=transforms.Compose([
             mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
             mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ), 
@@ -148,6 +150,8 @@ def main():
         tgsdata.test, 
         count=4000,
         num_channels=num_channels,
+        metadata='metadata_train.csv',
+        filter=True,
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash' ),
             #mtrans.RandomCrop( (255,255), limit=50, padding_mode=cv2.BORDER_CONSTANT  ),
