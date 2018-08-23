@@ -200,7 +200,7 @@ class SegmentationNeuralNet(NeuralNetAbstract):
 
         #save validation loss
         self.vallosses = self.logger_val.info['loss']['loss'].avg
-        acc = self.logger_val.info['metrics']['accs'].avg
+        acc = self.logger_val.info['metrics']['dices'].avg
 
         self.logger_val.logger(
             epoch, epoch, i, len(data_loader), 
