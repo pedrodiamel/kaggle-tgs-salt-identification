@@ -71,7 +71,7 @@ if __name__ == '__main__':
         train=True, 
         files='train.csv',
         metadata='metadata_train.csv',
-        filter=False,
+        filter=True,
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101), #unet
@@ -118,7 +118,7 @@ if __name__ == '__main__':
         #f (image-image.min()).sum() == 0:
         #   continue
         
-        if metadata['mg'] < 0.3:
+        if metadata['mg'] < 0.2:
             continue
         
         

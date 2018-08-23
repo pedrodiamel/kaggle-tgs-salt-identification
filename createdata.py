@@ -48,7 +48,7 @@ def main():
             'area':area, 
             'mean':mean,
             'std':std,
-            'bool': mg > 0.2 ,
+            'bool': mg > 0.1 ,
             }  )                    
     metadata = pd.DataFrame( metadata )
     metadata.head()
@@ -56,6 +56,8 @@ def main():
     filename=os.path.join(pathnamedataset,'metadata_train.csv')
     metadata.to_csv(filename, index=None, encoding='utf-8')
     print('save train metadata ...')
+    
+    return
 
     # test metadata generate
 

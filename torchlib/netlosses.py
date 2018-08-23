@@ -174,7 +174,7 @@ class MCEDiceLoss(nn.Module):
         #loss_fg   = self.loss_dice( y_pred[:,1,...].unsqueeze(1), y_true[:,1,...].unsqueeze(1) )
         #loss_th   = self.loss_dice( y_pred[:,2,...].unsqueeze(1), y_true[:,2,...].unsqueeze(1) )
         #loss = loss_all + loss_fg + loss_th           
-        loss = loss_all + 2.0*loss_fg  
+        loss = loss_all + loss_fg  
 
         return loss
 

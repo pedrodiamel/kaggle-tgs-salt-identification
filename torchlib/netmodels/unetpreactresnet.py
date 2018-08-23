@@ -5,6 +5,39 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import random
 
+
+__all__ = ['UNetPreActResNet', 'unetpreactresnet152', 'unetpreactresnet101', 'unetpreactresnet34']
+
+def unetpreactresnet152(pretrained=False, **kwargs):
+    """"UNetResNet model architecture
+    """
+    model = UNetPreActResNet(encoder_depth=152, pretrained=pretrained, **kwargs)
+    if pretrained == True:
+        #model.load_state_dict(state['model'])
+        pass
+    return model
+
+def unetpreactresnet101(pretrained=False, **kwargs):
+    """"UNetResNet model architecture
+    """
+    model = UNetPreActResNet(encoder_depth=101, pretrained=pretrained, **kwargs)
+    if pretrained == True:
+        #model.load_state_dict(state['model'])
+        pass
+    return model
+
+
+def unetpreactresnet34(pretrained=False, **kwargs):
+    """"UNetResNet model architecture
+    """
+    model = UNetPreActResNet(encoder_depth=34, pretrained=pretrained, **kwargs)
+    if pretrained == True:
+        #model.load_state_dict(state['model'])
+        pass
+    return model
+
+
+
 class PreActBlock(nn.Module):
     '''Pre-activation version of the BasicBlock.'''
     expansion = 1
@@ -177,13 +210,14 @@ class UNetPreActResNet(nn.Module):
 
 
         self.pool = nn.MaxPool2d(2, 2)
-        #self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=True)
+        self.bn1 = nn.BatchNorm2d(64)
         #self.conv1 = self.encoder.conv1
 
         self.conv1 = nn.Sequential(
             self.encoder.conv1,
-            #self.encoder.bn1,
-            #self.encoder.relu,
+            self.bn1,
+            self.relu,
             self.pool
             )
 
@@ -198,7 +232,7 @@ class UNetPreActResNet(nn.Module):
         self.dec4 = DecoderBlockV2(bottom_channel_nr // 2 + num_filters * 8, num_filters * 8 * 2, num_filters * 8, is_deconv)
         self.dec3 = DecoderBlockV2(bottom_channel_nr // 4 + num_filters * 8, num_filters * 4 * 2, num_filters * 2, is_deconv)
         self.dec2 = DecoderBlockV2(bottom_channel_nr // 8 + num_filters * 2, num_filters * 2 * 2, num_filters * 2 * 2, is_deconv)
-        self.dec1 = DecoderBlockV2(num_filters * 2 * 2, num_filters * 2 * 2, num_filters, is_deconv, scale_factor=1)
+        self.dec1 = ConvRelu(num_filters * 2 * 2, num_filters) #DecoderBlockV2(num_filters * 2 * 2, num_filters * 2 * 2, num_filters, is_deconv, scale_factor=1)
         self.dec0 = ConvRelu(num_filters, num_filters)
         self.final = nn.Conv2d(num_filters, num_classes, kernel_size=1)
 
@@ -222,18 +256,6 @@ class UNetPreActResNet(nn.Module):
 
 
 
-
-
-__all__ = ['UNetPreActResNet', 'unetpreactresnet152']
-
-def unetpreactresnet152(pretrained=False, **kwargs):
-    """"UNetResNet model architecture
-    """
-    model = UNetPreActResNet(encoder_depth=152, pretrained=pretrained, **kwargs)
-    if pretrained == True:
-        #model.load_state_dict(state['model'])
-        pass
-    return model
 
 
 
