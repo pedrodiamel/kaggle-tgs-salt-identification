@@ -75,6 +75,7 @@ if __name__ == '__main__':
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            #mtrans.CLAHE(),
             mtrans.ToTensor(),
             #mtrans.ToNormalization(), 
             mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
@@ -115,7 +116,7 @@ if __name__ == '__main__':
         #    results.append( {'id':idname, 'rle_mask':' '  } )
         #    continue
         
-        if metadata['mg'] < 0.3:
+        if metadata['mg'] < 0.2:
             results.append( {'id':idname, 'rle_mask':' '  } )
             continue        
         
@@ -123,12 +124,12 @@ if __name__ == '__main__':
         score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
         if tta:
             score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.fliplr( score_t )
+            score   = score * F.fliplr( score_t )
             score_t = net( F.flipud( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.flipud( score_t )    
+            score   = score * F.flipud( score_t )    
             score_t = net( F.flipud( F.fliplr( image.cuda() ) ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.flipud( F.fliplr( score_t ) )
-            score = score/4
+            score   = score * F.flipud( F.fliplr( score_t ) )
+            #score = score/4
             
         score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
         

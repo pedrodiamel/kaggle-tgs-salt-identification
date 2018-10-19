@@ -64,12 +64,14 @@ if __name__ == '__main__':
     # Load dataset
     print('>> Load dataset ...')
 
-    dataset  = TGSDataset(  
+    dataset = TGSDataset(  
         pathnamedataset, 
         'test', 
         num_channels=3,
         train=False, 
         files='sample_submission.csv',
+        metadata='metadata_test.csv',
+        filter=False,
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
@@ -85,10 +87,12 @@ if __name__ == '__main__':
 
     # /$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
     dataprojects = [
-        ['exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000335.pth.tar'],
-        ['exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000510.pth.tar'],
-        #['exp_tgs_unetresnet_mcedice_adam_tgs-salt-identification-challenge_002', 'chk000210.pth.tar'],
-        #['exp_tgs_unet11_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000340.pth.tar'],        
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_001.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_002.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_003.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_004.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_005.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_000.pth.tar'],        
     ]
     
     nets = []
@@ -117,12 +121,17 @@ if __name__ == '__main__':
         
         sample = dataset[ idx ]    
         idname = dataset.data.getimagename( idx )
+        metadata = dataset.data.getmetadata(idx)
+                
         image  = sample['image'].unsqueeze(0)
         
-        if (image-image.min()).sum() == 0:
-            results.append( {'id':idname, 'rle_mask':' '  } )
-            continue
+        #if (image-image.min()).sum() == 0:
+        #    results.append( {'id':idname, 'rle_mask':' '  } )
+        #    continue
         
+        if metadata['mg'] < 0.2:
+            results.append( {'id':idname, 'rle_mask':' '  } )
+            continue    
         
         scores = []
         for net in nets:
@@ -134,8 +143,7 @@ if __name__ == '__main__':
                 score   = score + F.flipud( score_t )    
                 score_t = net( F.flipud( F.fliplr( image.cuda() ) ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
                 score   = score + F.flipud( F.fliplr( score_t ) )
-                score = score/4
-                
+                score = score/4                
                 scores.append( score )
 
         scores = torch.stack(scores,dim=0)
@@ -148,7 +156,7 @@ if __name__ == '__main__':
         #score = cv2.resize(score, (101, 101) , interpolation = cv2.INTER_CUBIC) #unet
     
         pred  = np.argmax( score, axis=2 )          
-        #pred  = sigmoid( score[:,:,0] ) > 0.5
+        #pred  = score[:,:,0] > 0.485
         #pred = tgspostprocess(score)
         
         pred  = cv2.resize(pred.astype(float), (101, 101) , interpolation=cv2.INTER_LINEAR)  
@@ -167,7 +175,7 @@ if __name__ == '__main__':
         
         #results[idname] = code
         results.append( {'id':idname, 'rle_mask':code  } )
-        
+    
 
     #results = [ {'id': str(k), 'rle_mask': ' '.join( map(str, v) )  } for k,v in results.items()  ]    
     submission = pd.DataFrame(results).astype(str)

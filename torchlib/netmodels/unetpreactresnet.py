@@ -143,9 +143,6 @@ def preactresnet101(initial_channels,num_classes):
 def preactresnet152(initial_channels,num_classes):
     return PreActResNet(initial_channels, num_classes, PreActBottleneck, [3,8,36,3])
 
-
-
-
 def conv3x3(in_, out):
     return nn.Conv2d(in_, out, 3, padding=1)
 
@@ -185,6 +182,7 @@ class DecoderBlockV2(nn.Module):
 
     def forward(self, x):
         return self.block(x)
+
 
 class UNetPreActResNet(nn.Module):
     """PyTorch U-Net model using Pre Act ResNet(34, 101 or 152) encoder.

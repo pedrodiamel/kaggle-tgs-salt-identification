@@ -7,19 +7,19 @@ NAMEDATASET='tgs-salt-identification-challenge'
 PROJECT='../netruns'
 EPOCHS=1000
 BATCHSIZE=30
-LEARNING_RATE=0.0001
+LEARNING_RATE=0.00001
 MOMENTUM=0.5
 PRINT_FREQ=75
 WORKERS=30
-RESUME='chk000220.pth.tar'
+RESUME='chk000020.pth.tar'
 GPU=0
-ARCH='unetpreactresnet34'
+ARCH='unetresnet152'
 LOSS='mcedice'
-OPT='adam'
-SCHEDULER='plateau'
+OPT='rmsprop'
+SCHEDULER='step'
 IMAGESIZE=101
 SNAPSHOT=5
-EXP_NAME='exp_tgs_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_002'
+EXP_NAME='kaggle_tgs_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_007'
 #EXP_NAME='exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challenge_001'
 
 #rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

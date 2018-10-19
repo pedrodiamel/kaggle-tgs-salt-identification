@@ -70,6 +70,7 @@ if __name__ == '__main__':
         num_channels=3,
         train=True, 
         files='train.csv',
+        filter=False,
         transform=transforms.Compose([
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101), #unet
@@ -84,10 +85,12 @@ if __name__ == '__main__':
 
     # /$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
     dataprojects = [
-        ['exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000335.pth.tar'],
-        ['exp_tgs_unetresnet_152_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000510.pth.tar'],
-        ['exp_tgs_unetresnet_mcedice_adam_tgs-salt-identification-challenge_002', 'chk000210.pth.tar'],
-        ['exp_tgs_unet11_mcedice_adam_tgs-salt-identification-challenge_001', 'chk000340.pth.tar'],        
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_001.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_002.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_003.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_004.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_005.pth.tar'],
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_000.pth.tar'],        
     ] 
     
     nets = []
@@ -119,11 +122,17 @@ if __name__ == '__main__':
         #mask = mask[92:92+116, 92:92+116] #unet
         
         idname = dataset.getimagename( idx )
+        metadata = dataset.data.getmetadata(idx)
+        
+        
         #score = net( sample['image'].unsqueeze(0).cuda(), sample['metadata'].unsqueeze(0).cuda() )   
         image  = sample['image'].unsqueeze(0)
         image  = image.cuda()
         
-        if (image-image.min()).sum() == 0:
+        #if (image-image.min()).sum() == 0:
+        #    continue
+        
+        if metadata['mg'] < 0.1:
             continue
         
         scores = []
@@ -136,8 +145,7 @@ if __name__ == '__main__':
                 score   = score + F.flipud( score_t )
                 score_t = net( F.flipud( F.fliplr( image ) ), sample['metadata'].unsqueeze(0).cuda() )
                 score   = score + F.flipud( F.fliplr( score_t ) )
-                score = score/4
-            
+                score = score/4            
             scores.append( score )
         
         scores = torch.stack(scores,dim=0)

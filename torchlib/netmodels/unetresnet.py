@@ -24,8 +24,9 @@ def unetresnet152(pretrained=False, **kwargs):
     model = UNetResNet(encoder_depth=152 ,pretrained=pretrained, **kwargs)
 
     if pretrained == True:
-        #model.load_state_dict(state['model'])
-        pass
+        state = torch.load('../netruns/model.pth.tar')
+        model.load_state_dict(state['state_dict'])
+        #pass
     return model
 
 def unetresnet101(pretrained=False, **kwargs):
@@ -136,27 +137,23 @@ class UNetResNet(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
 
-        self.conv1 = nn.Sequential(self.encoder.conv1,
-                                   self.encoder.bn1,
-                                   self.encoder.relu,
-                                   self.pool)
+        self.conv1 = nn.Sequential(
+            self.encoder.conv1,
+            self.encoder.bn1,
+            self.encoder.relu,
+            self.pool
+            )
 
         self.conv2 = self.encoder.layer1
-
         self.conv3 = self.encoder.layer2
-
         self.conv4 = self.encoder.layer3
-
         self.conv5 = self.encoder.layer4
 
         self.center = DecoderBlockV2(bottom_channel_nr, num_filters * 8 * 2, num_filters * 8, is_deconv)
         self.dec5 = DecoderBlockV2(bottom_channel_nr + num_filters * 8, num_filters * 8 * 2, num_filters * 8, is_deconv)
-        self.dec4 = DecoderBlockV2(bottom_channel_nr // 2 + num_filters * 8, num_filters * 8 * 2, num_filters * 8,
-                                   is_deconv)
-        self.dec3 = DecoderBlockV2(bottom_channel_nr // 4 + num_filters * 8, num_filters * 4 * 2, num_filters * 2,
-                                   is_deconv)
-        self.dec2 = DecoderBlockV2(bottom_channel_nr // 8 + num_filters * 2, num_filters * 2 * 2, num_filters * 2 * 2,
-                                   is_deconv)
+        self.dec4 = DecoderBlockV2(bottom_channel_nr // 2 + num_filters * 8, num_filters * 8 * 2, num_filters * 8, is_deconv)
+        self.dec3 = DecoderBlockV2(bottom_channel_nr // 4 + num_filters * 8, num_filters * 4 * 2, num_filters * 2, is_deconv)
+        self.dec2 = DecoderBlockV2(bottom_channel_nr // 8 + num_filters * 2, num_filters * 2 * 2, num_filters * 2 * 2, is_deconv)
         self.dec1 = DecoderBlockV2(num_filters * 2 * 2, num_filters * 2 * 2, num_filters, is_deconv)
         self.dec0 = ConvRelu(num_filters, num_filters)
         self.final = nn.Conv2d(num_filters, num_classes, kernel_size=1)

@@ -234,9 +234,12 @@ class TGSExProvide(dataProvide):
                 metadata[f][2],
                 ) for f in file_list ]    
 
-        index = np.arange( len(data) )
+        n = len(data)
+        index = np.arange( n )
         if self.filter: # filter
             index = [ i for i in range( len(data) ) if data[i][5]  ]
+            #index = random.sample( index , k=int(len(index) - len(index)*0.08) ) #92%
+            #print('filter: ', len(index))
 
         self.index = index
         self.data = data

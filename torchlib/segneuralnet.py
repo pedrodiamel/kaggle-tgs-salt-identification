@@ -16,6 +16,7 @@ from tqdm import tqdm
 
 from . import netmodels as nnmodels
 from . import netlosses as nloss
+from . import lovasz_losses as lovasz_loss
 
 from pytvision.neuralnet import NeuralNetAbstract
 from pytvision.logger import Logger, AverageFilterMeter, AverageMeter
@@ -64,9 +65,10 @@ class SegmentationNeuralNet(NeuralNetAbstract):
         num_input_channels,  
         loss, 
         lr, 
-        momentum, 
         optimizer, 
-        lrsch,          
+        lrsch,    
+        momentum=0.9,
+        weight_decay=5e-4,      
         pretrained=False,
         size_input=388,
 
@@ -80,15 +82,31 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             -lrsch (string): scheduler learning rate
             -pretrained (bool)
         """
-        super(SegmentationNeuralNet, self).create( arch, num_output_channels, num_input_channels, loss, lr, momentum, optimizer, lrsch, pretrained)
+        
+        cfg_opt={ 'momentum':momentum, 'weight_decay':weight_decay } 
+        cfg_scheduler={ 'step_size':10, 'gamma':0.1  }
+        
+        super(SegmentationNeuralNet, self).create( 
+            arch, 
+            num_output_channels, 
+            num_input_channels, 
+            loss, 
+            lr, 
+            optimizer, 
+            lrsch, 
+            pretrained,
+            cfg_opt=cfg_opt, 
+            cfg_scheduler=cfg_scheduler
+        )
         self.size_input = size_input
         
         self.accuracy = nloss.Accuracy()
         self.dice = nloss.Dice()
-       
+        
+    
         # Set the graphic visualization
-        self.logger_train = Logger( 'Train', ['loss'], ['accs', 'dices'], self.plotter  )
-        self.logger_val   = Logger( 'Val  ', ['loss'], ['accs', 'dices'], self.plotter )
+        self.logger_train = Logger( 'Train', ['loss'], ['accs', 'dices' ], self.plotter  )
+        self.logger_val   = Logger( 'Val  ', ['loss'], ['accs', 'dices' ], self.plotter )
 
         self.visheatmap = gph.HeatMapVisdom(env_name=self.nameproject, heatsize=(100,100) )
         self.visimshow = gph.ImageVisdom(env_name=self.nameproject, imsize=(100,100) )
@@ -176,8 +194,8 @@ class SegmentationNeuralNet(NeuralNetAbstract):
                 # measure accuracy and record loss
                 loss  = self.criterion(outputs, targets, weights)   
                 accs  = self.accuracy(outputs, targets )
-                dices = self.dice( outputs, targets )                 
-
+                dices = self.dice( outputs, targets )   
+  
                 # measure elapsed time
                 batch_time.update(time.time() - end)
                 end = time.time()
@@ -312,6 +330,8 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             self.criterion = nloss.WeightedMCEFocalloss()
         elif loss == 'mcedice':
             self.criterion = nloss.MCEDiceLoss()  
+        elif loss == 'lovasz':
+            self.criterion = lovasz_loss.LovaszLoss()
         else:
             assert(False)
 
