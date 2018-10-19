@@ -124,12 +124,12 @@ if __name__ == '__main__':
         score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
         if tta:
             score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score * F.fliplr( score_t )
+            score   = score + F.fliplr( score_t )
             score_t = net( F.flipud( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score * F.flipud( score_t )    
+            score   = score + F.flipud( score_t )    
             score_t = net( F.flipud( F.fliplr( image.cuda() ) ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score * F.flipud( F.fliplr( score_t ) )
-            #score = score/4
+            score   = score + F.flipud( F.fliplr( score_t ) )
+            score = score/4
             
         score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
         

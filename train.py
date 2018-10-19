@@ -120,21 +120,21 @@ def main():
             
             mtrans.ToRandomTransform( mtrans.HFlip(),     prob=0.5 ),
             mtrans.ToRandomTransform( mtrans.VFlip(),     prob=0.5 ), 
-            mtrans.ToRandomTransform( mtrans.Rotate90(),  prob=0.5 ), 
-            mtrans.ToRandomTransform( mtrans.Rotate180(), prob=0.5 ), 
-            mtrans.ToRandomTransform( mtrans.Rotate270(), prob=0.5 ),               
+            #mtrans.ToRandomTransform( mtrans.Rotate90(),  prob=0.5 ), 
+            #mtrans.ToRandomTransform( mtrans.Rotate180(), prob=0.5 ), 
+            #mtrans.ToRandomTransform( mtrans.Rotate270(), prob=0.5 ),               
         
-            mtrans.ToRandomTransform( mtrans.RandomElasticDistort( size_grid=25, deform=5, padding_mode=cv2.BORDER_REFLECT_101 ), prob=0.50 ),        
-            mtrans.ToRandomTransform( mtrans.RandomGeometricalTransform( angle=30, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101), prob=0.50 ),     
-            mtrans.ToRandomTransform( mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ), prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.RandomElasticDistort( size_grid=25, deform=5, padding_mode=cv2.BORDER_REFLECT_101 ), prob=0.50 ),        
+            #mtrans.ToRandomTransform( mtrans.RandomGeometricalTransform( angle=30, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101), prob=0.50 ),     
+            #mtrans.ToRandomTransform( mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ), prob=0.50 ),
         
-            mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
-            mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ),   prob=0.50 ),
-            mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.15 ),      prob=0.50 ),
-            mtrans.ToRandomTransform( mtrans.CLAHE(),                         prob=0.25 ),
+            #mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ),   prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.15 ),      prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.CLAHE(),                         prob=0.25 ),
         
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
-            mtrans.ToRandomTransform( mtrans.RandomCrop( (256,256), limit=20, padding_mode=cv2.BORDER_REFLECT_101  ),  prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.RandomCrop( (256,256), limit=20, padding_mode=cv2.BORDER_REFLECT_101  ),  prob=0.50 ),
             
             #mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
             #mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ), 

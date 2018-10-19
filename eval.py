@@ -102,7 +102,7 @@ if __name__ == '__main__':
     
 
     index = []
-    tta = True
+    tta = False
     for idx in tqdm( range( len(dataset) ) ):  #len(dataset)
         
         sample = dataset[ idx ]    
@@ -125,12 +125,12 @@ if __name__ == '__main__':
         score = net( image, sample['metadata'].unsqueeze(0).cuda() )
         if tta:
             score_t = net( F.fliplr( image ), sample['metadata'].unsqueeze(0).cuda() )
-            score   = score * F.fliplr( score_t )
+            score   = score + F.fliplr( score_t )
             score_t = net( F.flipud( image ), sample['metadata'].unsqueeze(0).cuda() )
-            score   = score * F.flipud( score_t )
+            score   = score + F.flipud( score_t )
             score_t = net( F.flipud( F.fliplr( image ) ), sample['metadata'].unsqueeze(0).cuda() )
-            score   = score * F.flipud( F.fliplr( score_t ) )
-            #score = score/4
+            score   = score + F.flipud( F.fliplr( score_t ) )
+            score = score/4
 
         score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
                             
