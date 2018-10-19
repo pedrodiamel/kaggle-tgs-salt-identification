@@ -60,7 +60,7 @@ def main():
             'area':area, 
             'mean':mean,
             'std':std,
-            'bool': not i in index, # mg > 0.1 and (area==0 or area > 10) 
+            'bool': True,  # mg > 0.1 and (area==0 or area > 10) not i in index,
             }  )
         
     metadata = pd.DataFrame( metadata )

@@ -53,7 +53,6 @@ def get_center(img):
     y, x = ndimage.measurements.center_of_mass(img)
     cv2.circle(cent, (int(x), int(y)), 1, 1, -1)
     cent = (cent>0).astype(np.uint8) 
-
     cent  = np.array([ morph.binary_dilation(c) for c in cent ]) 
     cent = tolabel(cent) 
     return cent
@@ -61,3 +60,13 @@ def get_center(img):
 def get_distance(x):
     return skfmm.distance((x).astype('float32') - 0.5) 
 
+
+def get_contour_salt( mask ):   
+    mask = mask.astype(np.uint8)    
+    edge = np.zeros_like(mask)
+    _,cnt,_ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE )
+    cv2.drawContours( edge, cnt, -1, 1, 1)
+    edge = (edge>0).astype(np.uint8)  
+    edge = morph.binary_dilation( edge, morph.square(5) )
+    edge = edge*( mask == 0 )    
+    return edge

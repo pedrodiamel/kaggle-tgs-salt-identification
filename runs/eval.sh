@@ -12,7 +12,7 @@ PATHMODEL='models'
 NAMEMODEL='model_best.pth.tar' #'model_best.pth.tar' #'chk000335.pth.tar'
 MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
 
-python ../eval.py \
+python ../eval_ens.py \
 --project=$PROJECT \
 --projectname=$PROJECTNAME \
 --pathdataset=$PATHDATASET \

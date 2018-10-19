@@ -86,13 +86,30 @@ if __name__ == '__main__':
     print('>> Load model ...')
 
     # /$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
+    
+    #dataprojectsedges = ['kaggle_tgs_unetresnet152_mcedice_adam_tgs-salt-identification-challenge_008', 'model_best.pth.tar']
+    #projectname, model = dataprojectsedges
+    #netedges = SegmentationNeuralNet( 
+    #        patchproject=project, 
+    #        nameproject=os.path.join(project, projectname), 
+    #        no_cuda=cuda, 
+    #        parallel=parallel, 
+    #        seed=seed, 
+    #        gpu=gpu 
+    #        )
+    #if netedges.load( os.path.join(project, projectname, 'models', model) ) is not True:
+    #    assert(False)
+    
     dataprojects = [
-        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_001.pth.tar'],
-        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_002.pth.tar'],
-        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_003.pth.tar'],
-        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_004.pth.tar'],
-        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_005.pth.tar'],
-        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006', 'model_best_000.pth.tar'],        
+        ['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006',     'model_best_000.pth.tar'],
+        #['kaggle_tgs_unetresnet152_lovasz_adam_tgs-salt-identification-challenge_006',     'model_best_005.pth.tar'],
+        #['kaggle_tgs_unetresnet152_mcedice_rmsprop_tgs-salt-identification-challenge_007', 'model_best_001.pth.tar'],
+        #['kaggle_tgs_unetresnet152_mcedice_rmsprop_tgs-salt-identification-challenge_007', 'model_best.pth.tar'],   
+        ['exp_tgs_unetresnet34_mcedice_adam_tgs-salt-identification-challenge_004',        'model_best.pth.tar'],
+        ['exp_tgs_unetresnet34_mcedice_adam_tgs-salt-identification-challenge_003',        'model_best.pth.tar'],
+        #['exp_tgs_unetresnet152_mcedice_adam_tgs-salt-identification-challenge_002',       'model_best.pth.tar'],
+        ['exp_tgs_unet11_mcedice_adam_tgs-salt-identification-challenge_001',              'model_best.pth.tar'],
+        
     ]
     
     nets = []
@@ -132,9 +149,17 @@ if __name__ == '__main__':
         if metadata['mg'] < 0.2:
             results.append( {'id':idname, 'rle_mask':' '  } )
             continue    
+            
+        # edges
+        #score = netedges( image, sample['metadata'].unsqueeze(0).cuda() )
+        #pred  = np.argmax( score, axis=2 )
+        #if pred.sum()==0:
+        #    results.append( {'id':idname, 'rle_mask':' '  } )
+        #    continue 
+            
         
         scores = []
-        for net in nets:
+        for i,net in enumerate(nets):                
             score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
             if tta:
                 score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )

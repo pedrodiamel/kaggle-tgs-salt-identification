@@ -12,7 +12,7 @@ PATHMODEL='models'
 NAMEMODEL='model_best.pth.tar' 
 MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
 
-python ../submission.py \
+python ../submission_ens.py \
 --project=$PROJECT \
 --projectname=$PROJECTNAME \
 --pathdataset=$PATHDATASET \

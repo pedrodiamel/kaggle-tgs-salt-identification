@@ -7,8 +7,11 @@ import numpy as np
 
 from .weightmaps import getweightmap
 from .imageutl import  TGSProvide, TGSExProvide
+from .utility import get_contour_salt
+
 from pytvision.datasets import utility 
 from pytvision.transforms.aumentation import  ObjectImageMaskMetadataAndWeightTransform, ObjectImageMetadataTransform
+
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -70,12 +73,18 @@ class TGSDataset(object):
         if self.data.train:
             name, image, mask, depth = self.data[idx] 
             image_t  = utility.to_channels(image, ch=self.num_channels )
+                        
+            #edges
+            #mask = get_contour_salt(mask)
+            
             weight_t = getweightmap(mask)
             weight_t = weight_t[:,:,np.newaxis]
+            
             mask_t   = np.zeros( (mask.shape[0], mask.shape[1], 2) )   
             mask_t[:,:,0] = (mask <= 0) #bg
             mask_t[:,:,1] = (mask >  0)
             obj = ObjectImageMaskMetadataAndWeightTransform( image_t, mask_t, weight_t, np.array([depth])  )
+            
         else:
             name, image, depth = self.data[idx] 
             image_t  = utility.to_channels(image, ch=self.num_channels )

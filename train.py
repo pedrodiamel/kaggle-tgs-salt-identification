@@ -128,9 +128,9 @@ def main():
             #mtrans.ToRandomTransform( mtrans.RandomGeometricalTransform( angle=30, translation=0.2, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101), prob=0.50 ),     
             #mtrans.ToRandomTransform( mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ), prob=0.50 ),
         
-            #mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
-            #mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ),   prob=0.50 ),
-            #mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.15 ),      prob=0.50 ),
+            mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
+            mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ),   prob=0.50 ),
+            mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.15 ),      prob=0.50 ),
             #mtrans.ToRandomTransform( mtrans.CLAHE(),                         prob=0.25 ),
         
             mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
