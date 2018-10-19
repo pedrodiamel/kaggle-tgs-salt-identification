@@ -2,23 +2,27 @@
 # Kaggle: TGS Salt Identification Challenge
 Segment salt deposits beneath the Earth's surface
 
+## Solution (branch)
+
+- draka
+- durotan
+- garona
 
 ## Results
 
 | Branch   | Name     | CV      | LB    | Description               |
 |---------:|---------:|:-------:|:-----:|:--------------------------|
 | classic  | unet     |         |       |                           |
-|          | unetrest | 0.8134  | 0.782 | pre-train resnet135       |
-|          |          |         |       |                           |
-| depth    |          |         |       |                           |
-|          |          |         |       |                           |
-|          |          |         |       |                           |
+|          | unetrest | 0.8134  | 0.840 | pre-train resnet135 + tta |
 |          |          |         |       |                           |
 
 
 
 ## Installation
-       
+
+    $git clone https://github.com/pedrodiamel/pytorchvision.git
+    $cd pytorchvision
+    $python setup.py install
     $pip install -r installation.txt
 
 ## Download Kaggle dataset
