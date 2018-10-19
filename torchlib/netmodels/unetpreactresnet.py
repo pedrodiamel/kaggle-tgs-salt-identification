@@ -234,6 +234,9 @@ class UNetPreActResNet(nn.Module):
         self.dec2 = DecoderBlockV2(bottom_channel_nr // 8 + num_filters * 2, num_filters * 2 * 2, num_filters * 2 * 2, is_deconv)
         self.dec1 = ConvRelu(num_filters * 2 * 2, num_filters) #DecoderBlockV2(num_filters * 2 * 2, num_filters * 2 * 2, num_filters, is_deconv, scale_factor=1)
         self.dec0 = ConvRelu(num_filters, num_filters)
+        
+        
+        
         self.final = nn.Conv2d(num_filters, num_classes, kernel_size=1)
 
     def forward(self, x):         
@@ -242,9 +245,11 @@ class UNetPreActResNet(nn.Module):
         conv2 = self.conv2(conv1);  
         conv3 = self.conv3(conv2);  
         conv4 = self.conv4(conv3);  
-        conv5 = self.conv5(conv4);  
+        conv5 = self.conv5(conv4); 
+        
         pool = self.pool(conv5);                         
-        center = self.center(pool);   
+        center = self.center(pool); 
+        
         dec5 = self.dec5(torch.cat([center, conv5], 1));  
         dec4 = self.dec4(torch.cat([dec5, conv4], 1));   
         dec3 = self.dec3(torch.cat([dec4, conv3], 1));   

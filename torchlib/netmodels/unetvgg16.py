@@ -19,6 +19,21 @@ def unetvgg16(pretrained=False, **kwargs):
     return model
 
 
+def conv3x3(in_, out):
+    return nn.Conv2d(in_, out, 3, padding=1)
+
+class ConvRelu(nn.Module):
+    def __init__(self, in_, out):
+        super().__init__()
+        self.conv = conv3x3(in_, out)
+        self.activation = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.activation(x)
+        return x
+
+
 class DecoderBlockV2(nn.Module):
     def __init__(self, in_channels, middle_channels, out_channels, is_deconv=True):
         super(DecoderBlockV2, self).__init__()
@@ -118,7 +133,7 @@ class UNetVGG16(nn.Module):
         self.dec1 = ConvRelu(64 + num_filters, num_filters)
         self.final = nn.Conv2d(num_filters, num_classes, kernel_size=1)
 
-    def forward(self, x):
+    def forward(self, x, d=0):
         conv1 = self.conv1(x)
         conv2 = self.conv2(self.pool(conv1))
         conv3 = self.conv3(self.pool(conv2))

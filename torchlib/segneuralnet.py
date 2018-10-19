@@ -80,7 +80,17 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             -lrsch (string): scheduler learning rate
             -pretrained (bool)
         """
-        super(SegmentationNeuralNet, self).create( arch, num_output_channels, num_input_channels, loss, lr, momentum, optimizer, lrsch, pretrained)
+        super(SegmentationNeuralNet, self).create( 
+            arch, 
+            num_output_channels, 
+            num_input_channels, 
+            loss, 
+            lr, 
+            optimizer, 
+            lrsch, 
+            pretrained
+        )
+        
         self.size_input = size_input
         
         self.accuracy = nloss.Accuracy()
@@ -121,7 +131,8 @@ class SegmentationNeuralNet(NeuralNetAbstract):
             
 
             # fit (forward)            
-            outputs = self.net(inputs, depth) if self.s_arch == 'dunet' else self.net(inputs)            
+            #outputs = self.net(inputs, depth) if self.s_arch == 'dunet' else self.net(inputs) 
+            outputs = self.net(inputs, depth)  
 
             # measure accuracy and record loss
             loss = self.criterion(outputs, targets, weights)            
@@ -171,8 +182,10 @@ class SegmentationNeuralNet(NeuralNetAbstract):
                     depth   = depth.cuda()
                  
                 # fit (forward)
-                outputs = self.net(inputs, depth) if self.s_arch == 'dunet' else self.net(inputs)
-
+                #outputs = self.net(inputs, depth) if self.s_arch == 'dunet' else self.net(inputs)
+                outputs = self.net(inputs, depth) 
+                
+                
                 # measure accuracy and record loss
                 loss  = self.criterion(outputs, targets, weights)   
                 accs  = self.accuracy(outputs, targets )
@@ -262,7 +275,9 @@ class SegmentationNeuralNet(NeuralNetAbstract):
         with torch.no_grad():
             x = image.cuda() if self.cuda else image    
             z = z.cuda() if self.cuda else z 
-            yhat = self.net(x, z) if self.s_arch == 'dunet' else self.net(x)
+            #yhat = self.net(x, z) if self.s_arch == 'dunet' else self.net(x)
+            yhat = self.net(x, z)
+            
             yhat = F.softmax( yhat, dim=1 )
             #yhat = pytutils.to_np(yhat).transpose(2,3,1,0)[...,0]
 

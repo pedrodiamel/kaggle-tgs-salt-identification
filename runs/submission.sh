@@ -5,12 +5,12 @@
 PATHDATASET='~/.kaggle/competitions/'
 NAMEDATASET='tgs-salt-identification-challenge'
 PROJECT='../netruns'
-PROJECTNAME='exp_tgs_unetresnet_mcedice_adam_tgs-salt-identification-challenge_002'
+PROJECTNAME='exp_tgs_unetresnet34_mcedice_adam_tgs-salt-identification-challenge_004'
 #PROJECTNAME='exp_tgs_unet11_mcedice_adam_tgs-salt-identification-challenge_001'
 PATHNAMEOUT='.'
 FILENAME='submission.csv'
 PATHMODEL='models'
-NAMEMODEL='chk000335.pth.tar' 
+NAMEMODEL='model_best.pth.tar' 
 MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
 
 python ../submission.py \

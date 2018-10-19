@@ -78,6 +78,9 @@ def main():
     num_classes=2
     num_channels=3
     view_freq=1
+    
+    cv2.setNumThreads(0)	
+    cv2.ocl.setUseOpenCL(False)
 
     network = SegmentationNeuralNet(
         patchproject=args.project,
@@ -117,25 +120,29 @@ def main():
         metadata='metadata_train.csv',
         filter=True,
         transform=transforms.Compose([
-            #mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
-            mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ), 
-
-            mtrans.ToResize( (300,300), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
-            mtrans.RandomGeometricalTransform( angle=30, translation=0.0, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101), 
-            
-            mtrans.RandomCrop( (256,256), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
-            #mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
-            #mtrans.RandomCrop( (101,101), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
-            
+            mtrans.ToRandomTransform( mtrans.HFlip(), prob=0.5 ),
+            mtrans.ToRandomTransform( mtrans.VFlip(), prob=0.5 ),
             mtrans.RandomScale(factor=0.2, padding_mode=cv2.BORDER_REFLECT_101 ),
+            #mtrans.RandomGeometricalTransform( angle=30, translation=0.0, warp=0.02, padding_mode=cv2.BORDER_REFLECT_101),
+                        
+            #mtrans.RandomElasticDistort( size_grid=16, padding_mode=cv2.BORDER_REFLECT101 ),
+            #mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ), prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.15 ), prob=0.50 ),
+            #mtrans.ToRandomTransform( mtrans.RandomHueSaturation( hue_shift_limit=(-5, 5), sat_shift_limit=(-11, 11), val_shift_limit=(-11, 11) ), prob=0.30 ),
+            #mtrans.ToRandomTransform( mtrans.ToGaussianBlur( sigma=0.0001 ), prob=0.15 ),
+            #mtrans.ToRandomTransform( mtrans.CLAHE(), prob=0.25 ),
             
-            mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.15 ), prob=0.50 ),
-            mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.15 ), prob=0.50 ),
-            mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.15 ), prob=0.50 ),
-            #mtrans.ToRandomTransform( mtrans.ToGaussianBlur(), prob=0.15 ),
+            #mtrans.RandomCrop( (102,120), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
+            mtrans.ToResize( (500,500), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),            
+            mtrans.ToPad( 6, 6, padding_mode=cv2.BORDER_REFLECT_101 ),
             
-            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
-            #mtrans.RandomElasticDistort( size_grid=50, padding_mode=cv2.BORDER_REFLECT101 ),
+            #mtrans.RandomCrop( (256,256), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),
+            #mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            #mtrans.RandomCrop( (101,101), limit=10, padding_mode=cv2.BORDER_REFLECT_101  ),   
+                        
+            #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),    
+            
             mtrans.ToTensor(),
             mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
             #mtrans.ToNormalization(),
@@ -149,14 +156,18 @@ def main():
     val_data = tgsdata.TGSDataset(
         args.data, 
         tgsdata.test, 
-        count=4000, 
+        #count=4000, 
         num_channels=num_channels,
         metadata='metadata_train.csv',
         filter=True,
         transform=transforms.Compose([
-            mtrans.ToResize( (256,256), resize_mode='squash' ),
+            #mtrans.ToResize( (256,256), resize_mode='squash' ),
             #mtrans.RandomCrop( (255,255), limit=50, padding_mode=cv2.BORDER_CONSTANT  ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
+            
+            mtrans.ToResize( (500,500), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),            
+            mtrans.ToPad( 6, 6, padding_mode=cv2.BORDER_REFLECT_101 ),
+            
             mtrans.ToTensor(),
             mtrans.ToMeanNormalization( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], )
             #mtrans.ToNormalization(), 

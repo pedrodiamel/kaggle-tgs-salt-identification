@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import cv2
 from tqdm import tqdm
-import matplotlib.pyplot as plt 
+#import matplotlib.pyplot as plt 
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -26,6 +26,11 @@ def maggradient(image):
     divI =  (gI[0]**2 + gI[1]**2)**0.5 
     mg  = np.sum(divI>0.001)/np.prod(divI.shape)
     return mg
+
+def norm( x ):
+    x = x - x.min()
+    x = x / x.max()
+    return x
 
 
 def main():
@@ -48,7 +53,7 @@ def main():
             'area':area, 
             'mean':mean,
             'std':std,
-            'bool': mg > 0.1 ,
+            'bool': mg > 0.1,
             }  )                    
     metadata = pd.DataFrame( metadata )
     metadata.head()
@@ -56,8 +61,8 @@ def main():
     filename=os.path.join(pathnamedataset,'metadata_train.csv')
     metadata.to_csv(filename, index=None, encoding='utf-8')
     print('save train metadata ...')
-    
-    return
+   
+    #return
 
     # test metadata generate
 

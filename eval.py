@@ -71,9 +71,14 @@ if __name__ == '__main__':
         train=True, 
         files='train.csv',
         metadata='metadata_train.csv',
-        filter=True,
+        filter=False,
         transform=transforms.Compose([
-            mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            #mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            
+            mtrans.ToResize( (102,102), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),            
+            mtrans.ToPad( 13, 13, padding_mode=cv2.BORDER_REFLECT_101 ),
+            
+            #mtrans.ToGaussianBlur( sigma=0.0001),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101), #unet
             mtrans.ToTensor(),
             #mtrans.ToNormalization(), 
@@ -101,11 +106,13 @@ if __name__ == '__main__':
     
 
     index = []
-    tta = False
+    tta = True
     for idx in tqdm( range( len(dataset) ) ):  #len(dataset)
         
         sample = dataset[ idx ]    
-        mask = sample['label'][1,:,:].data.numpy()
+        mask  = sample['label'][1,:,:].data.numpy()
+        depth = sample['metadata'].unsqueeze(0).cuda()
+        
         #mask = mask[92:92+116, 92:92+116] #unet
         
         idname = dataset.getimagename( idx )
@@ -118,32 +125,35 @@ if __name__ == '__main__':
         #f (image-image.min()).sum() == 0:
         #   continue
         
-        if metadata['mg'] < 0.2:
+        if metadata['mg'] < 0.1:
             continue
+                
         
-        
-        score = net( image, sample['metadata'].unsqueeze(0).cuda() )
+        score = net( image, depth )
         if tta:
-            score_t = net( F.fliplr( image ), sample['metadata'].unsqueeze(0).cuda() )
+            score_t = net( F.fliplr( image ), depth )
             score   = score + F.fliplr( score_t )
-            score_t = net( F.flipud( image ), sample['metadata'].unsqueeze(0).cuda() )
+            score_t = net( F.flipud( image ), depth )
             score   = score + F.flipud( score_t )
-            score_t = net( F.flipud( F.fliplr( image ) ), sample['metadata'].unsqueeze(0).cuda() )
+            score_t = net( F.flipud( F.fliplr( image ) ), depth )
             score   = score + F.flipud( F.fliplr( score_t ) )
             score = score/4
 
         score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
-        
-                    
+                           
         #score = F.resize_unet_inv_transform( score, (101,101,3), 101, cv2.INTER_CUBIC )  #unet
         #mask  = F.resize_unet_inv_transform( mask , (101,101,3), 101, cv2.INTER_LINEAR ) #unet
         
         pred  = np.argmax( score, axis=2 )
-        #pred  =  score[:,:,1]  > 0.40 #sigmoid()
+        #pred  =  score[:,:,1]  > 0.01 #sigmoid()
         #pred = tgspostprocess(score)
         
-        index.append( pred.sum() > 10 )
+        index.append( pred.sum() > 1 )
 
+        
+        pred  = pred[13:-13, 13:-13, ...]
+        mask  = mask[13:-13, 13:-13, ...]  
+        
         y_true.append( mask.astype(int) )
         y_pred.append( pred.astype(int) )
         

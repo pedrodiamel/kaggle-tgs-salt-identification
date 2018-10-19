@@ -73,7 +73,7 @@ if __name__ == '__main__':
         metadata='metadata_test.csv',
         filter=False,
         transform=transforms.Compose([
-            mtrans.ToResize( (256,256), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
+            mtrans.ToResize( (128,128), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT_101 ),
             #mtrans.ToResizeUNetFoV(imsize, cv2.BORDER_REFLECT_101),
             mtrans.ToTensor(),
             #mtrans.ToNormalization(), 
@@ -108,6 +108,7 @@ if __name__ == '__main__':
         sample = dataset[ idx ]    
         idname = dataset.data.getimagename( idx )
         metadata = dataset.data.getmetadata(idx)
+        depth = sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda()
         
         image  = sample['image'].unsqueeze(0)        
         
@@ -115,20 +116,20 @@ if __name__ == '__main__':
         #    results.append( {'id':idname, 'rle_mask':' '  } )
         #    continue
         
-        if metadata['mg'] < 0.3:
+        if metadata['mg'] < 0.1:
             results.append( {'id':idname, 'rle_mask':' '  } )
             continue        
         
         
-        score = net( image.cuda(), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+        score = net( image.cuda(), depth  )
         if tta:
-            score_t = net( F.fliplr( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
+            score_t = net( F.fliplr( image.cuda() ), depth )
             score   = score + F.fliplr( score_t )
-            score_t = net( F.flipud( image.cuda() ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.flipud( score_t )    
-            score_t = net( F.flipud( F.fliplr( image.cuda() ) ), sample['metadata'][1].unsqueeze(0).unsqueeze(0).cuda() )
-            score   = score + F.flipud( F.fliplr( score_t ) )
-            score = score/4
+            #score_t = net( F.flipud( image.cuda() ), depth )
+            #score   = score + F.flipud( score_t )    
+            #score_t = net( F.flipud( F.fliplr( image.cuda() ) ), depth )
+            #score   = score + F.flipud( F.fliplr( score_t ) )
+            score = score/2
             
         score = score.data.cpu().numpy().transpose(2,3,1,0)[...,0]
         
