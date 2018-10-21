@@ -10,13 +10,14 @@ Segment salt deposits beneath the Earth's surface
 
 ## Results
 
-| Branch   | Name     | CV      | LB    | Description               |
-|---------:|---------:|:-------:|:-----:|:--------------------------|
-| classic  | unet     |         |       |                           |
-|          | unetrest | 0.8134  | 0.840 | pre-train resnet135 + tta |
-|          |          |         |       |                           |
+| Branch   | Name     | CV      | LB (Public)    | LB (Private)   | Description               |
+|---------:|---------:|:-------:|:--------------:|:--------------:|:--------------------------|
+| classic  | unet     |         |                |                |                           |
+|          | unetrest | 0.8134  | 0.840          | 0.868          | pre-train resnet135 + tta |
+|          |          |         |                |                |                           |
 
-
+- top10%: 210 place
+- https://www.kaggle.com/c/tgs-salt-identification-challenge/leaderboard
 
 ## Installation
 
