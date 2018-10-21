@@ -4,7 +4,7 @@ Segment salt deposits beneath the Earth's surface
 
 ## Solution (branch)
 
-- draka
+- draka *** (place 210)
 - durotan
 - garona
 
