@@ -4,7 +4,7 @@ Segment salt deposits beneath the Earth's surface
 
 ## Solution (branch)
 
-- draka *** (place 210)
+- draka *** (place 191 Top6%)
 - durotan
 - garona
 
@@ -16,7 +16,7 @@ Segment salt deposits beneath the Earth's surface
 |          | unetrest | 0.8134  | 0.840          | 0.868          | pre-train resnet135 + tta |
 |          |          |         |                |                |                           |
 
-- top10%: 210 place
+- top10%: 191 place (top6%)
 - https://www.kaggle.com/c/tgs-salt-identification-challenge/leaderboard
 
 ## Installation
